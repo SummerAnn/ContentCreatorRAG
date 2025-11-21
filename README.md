@@ -1,4 +1,4 @@
-# 🎬 CreatorFlow AI
+# CreatorFlow AI
 
 **100% Free & Open Source AI Platform for Content Creators**
 
@@ -6,24 +6,26 @@ Generate viral hooks, scripts, shot lists, and music prompts for YouTube Shorts,
 
 ---
 
-## ✨ Features
+## Features
 
-- 🎯 **Platform-Specific Generation**: Optimized for YouTube, TikTok, Instagram, LinkedIn, Twitter/X, Pinterest, Podcasts
-- 🧠 **RAG-Powered**: Learns from YOUR best-performing content
-- 📝 **Complete Content Packages**: Hooks, scripts, shot lists, music prompts, titles, descriptions, tags, thumbnails, beatmaps, CTAs
-- 🆓 **100% Free**: Runs locally with open-source models (no API costs)
-- 🔒 **Privacy-First**: Your content never leaves your machine
-- 💬 **ChatGPT-like UI**: Intuitive conversational interface with collapsible sidebar
-- 📓 **Idea Notes**: Brainstorm and save ideas, then develop them with AI
-- 💬 **Continue Conversations**: Chat with AI to refine, revise, or expand on generated content
-- 🎲 **Random Idea Roaster**: Get instant inspiration with random content ideas
-- 📚 **Conversation History**: Save and revisit past conversations
-- 🎨 **Luxury UI**: Beautiful black & cream design with Manrope font
-- 🔧 **Tool Recommendations**: Get AI-suggested tools based on your content type
+- **Platform-Specific Generation**: Optimized for YouTube, TikTok, Instagram, LinkedIn, Twitter/X, Pinterest, Podcasts
+- **RAG-Powered**: Learns from YOUR best-performing content
+- **Complete Content Packages**: Hooks, scripts, shot lists, music prompts, titles, descriptions, tags, thumbnails, beatmaps, CTAs
+- **100% Free**: Runs locally with open-source models (no API costs)
+- **Privacy-First**: Your content never leaves your machine
+- **ChatGPT-like UI**: Intuitive conversational interface with collapsible sidebar
+- **Idea Notes**: Brainstorm and save ideas, then develop them with AI
+- **Continue Conversations**: Chat with AI to refine, revise, or expand on generated content
+- **Random Idea Roaster**: Get instant inspiration with random content ideas
+- **Conversation History**: Save and revisit past conversations
+- **Luxury UI**: Beautiful black & cream design with Manrope font
+- **Tool Recommendations**: Get AI-suggested tools based on your content type
+- **Trend Integration**: Real-time trending topics from Reddit and pattern-based sources
+- **Talk or No Talking**: Choose voiceover scripts or silent text-overlay content
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -35,8 +37,8 @@ Generate viral hooks, scripts, shot lists, and music prompts for YouTube Shorts,
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/creatorflow
-cd creatorflow
+git clone https://github.com/SummerAnn/ContentCreatorRAG.git
+cd ContentCreatorRAG
 
 # Run setup script
 chmod +x setup.sh
@@ -53,7 +55,7 @@ That's it! The setup script will:
 
 ---
 
-## 📖 Usage
+## Usage
 
 ### 1. First Time Setup
 
@@ -88,7 +90,7 @@ That's it! The setup script will:
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 Frontend (Next.js) ← → Backend (FastAPI) ← → Ollama (Local LLM)
@@ -107,7 +109,7 @@ Frontend (Next.js) ← → Backend (FastAPI) ← → Ollama (Local LLM)
 
 ---
 
-## 🛠️ Development
+## Development
 
 ### Manual Setup (without Docker)
 
@@ -148,7 +150,7 @@ npm test
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 creatorflow/
@@ -164,25 +166,25 @@ creatorflow/
 
 ---
 
-## 🎨 Supported Platforms
+## Supported Platforms
 
-- ✅ YouTube Shorts
-- ✅ YouTube Long-form
-- ✅ TikTok
-- ✅ Instagram Reels
-- ✅ Instagram Carousels
-- ✅ LinkedIn Posts
-- ✅ Twitter/X Threads
-- ✅ Pinterest Pins
-- ✅ Podcast Clips
+- YouTube Shorts
+- YouTube Long-form
+- TikTok
+- Instagram Reels
+- Instagram Carousels
+- LinkedIn Posts
+- Twitter/X Threads
+- Pinterest Pins
+- Podcast Clips
 
-## 🖼️ Image Reference Support
+## Image Reference Support
 
 Upload reference images and our CLIP-powered vision model will understand the visual context to generate better, more relevant content suggestions.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
@@ -194,13 +196,13 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🌟 Roadmap
+## Roadmap
 
 ### Phase 1 (Current)
 - [x] Basic RAG implementation
@@ -225,7 +227,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Phase 2
 - [ ] Performance tracking
 - [ ] A/B testing suggestions
-- [ ] Trend integration
+- [x] Trend integration
 - [ ] Analytics-aware feedback
 
 ### Phase 3
@@ -236,15 +238,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 💬 Support
+## Support
 
-- 📧 Email: support@creatorflow.ai
-- 💬 Discord: [Join our community](https://discord.gg/creatorflow)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/creatorflow/issues)
+- Email: support@creatorflow.ai
+- Discord: [Join our community](https://discord.gg/creatorflow)
+- Issues: [GitHub Issues](https://github.com/SummerAnn/ContentCreatorRAG/issues)
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Ollama for local LLM infrastructure
 - Sentence Transformers for embeddings
@@ -252,5 +254,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ for content creators
+Made for content creators
 

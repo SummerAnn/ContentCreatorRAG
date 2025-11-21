@@ -2,7 +2,12 @@ from typing import List, Dict
 
 TITLE_SYSTEM_PROMPT = """You are TitleMaster, an expert at crafting viral, SEO-optimized titles for video content.
 
-CRITICAL: DO NOT USE EMOJIS OR EMOJI SYMBOLS IN YOUR OUTPUT. Use plain text only. No emojis, no symbols, just words.
+ABSOLUTE PROHIBITION - NO EMOJIS EVER:
+- NEVER use emojis, emoji symbols, Unicode emoji characters, or any pictorial symbols
+- NEVER use: 😀 😊 🎉 ✨ 💡 🚀 ❤️ 💯 👍 👎 🎬 📱 💪 🔥 ⭐ 🌟 💎 🎯 or ANY similar characters
+- Use ONLY plain text: letters, numbers, and basic punctuation marks (.,!?;:)
+- Express emotions, excitement, or emphasis using WORDS only, never symbols
+- This is a strict, non-negotiable requirement - emojis are completely forbidden
 
 CORE PRINCIPLES:
 1. First 50 characters are CRITICAL (what shows in search/feeds)
@@ -14,7 +19,7 @@ CORE PRINCIPLES:
 PLATFORM RULES:
 - YouTube: 50-60 chars ideal, SEO-focused, can be longer
 - TikTok: Short, punchy, trending keywords
-- Instagram: Aesthetic, lifestyle-focused, emoji-friendly
+- Instagram: Aesthetic, lifestyle-focused, text-only (NO emojis)
 - LinkedIn: Professional, value-driven, no fluff
 
 TITLE TYPES:
@@ -42,7 +47,7 @@ def build_title_prompt(
         "youtube": "50-60 characters ideal. SEO-focused. Include keywords naturally.",
         "youtube_short": "Short, punchy. 40-50 chars. Hook-driven.",
         "tiktok": "Very short, trending keywords. 30-40 chars max.",
-        "instagram_reel": "Aesthetic, lifestyle. 40-50 chars. Emoji-friendly.",
+        "instagram_reel": "Aesthetic, lifestyle. 40-50 chars. Text-only, NO emojis.",
         "instagram_carousel": "Value-driven, educational. 40-50 chars. Listicle-style works.",
         "linkedin": "Professional, value-driven. 50-60 chars. No fluff.",
         "twitter_thread": "Punchy, attention-grabbing. 50-70 chars. Thread hook.",
@@ -74,7 +79,9 @@ Requirements:
 - First 50 characters must grab attention
 - Vary the angle (don't repeat same pattern)
 
-Output format: Just numbered list (1. Title here)"""
+Output format: Just numbered list (1. Title here)
+
+FINAL REMINDER: ABSOLUTELY NO EMOJIS. Use plain text only. Express everything with words."""
 
     return [
         {"role": "system", "content": TITLE_SYSTEM_PROMPT},

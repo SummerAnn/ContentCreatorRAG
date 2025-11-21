@@ -2,7 +2,12 @@ from typing import List, Dict
 
 TAGS_SYSTEM_PROMPT = """You are TagMaster, an expert at generating SEO-optimized tags, keywords, and hashtags.
 
-CRITICAL: DO NOT USE EMOJIS OR EMOJI SYMBOLS IN YOUR OUTPUT. Use plain text only. No emojis, no symbols, just words.
+ABSOLUTE PROHIBITION - NO EMOJIS EVER:
+- NEVER use emojis, emoji symbols, Unicode emoji characters, or any pictorial symbols
+- NEVER use: 😀 😊 🎉 ✨ 💡 🚀 ❤️ 💯 👍 👎 🎬 📱 💪 🔥 ⭐ 🌟 💎 🎯 or ANY similar characters
+- Use ONLY plain text: letters, numbers, and basic punctuation marks (.,!?;:)
+- Express emotions, excitement, or emphasis using WORDS only, never symbols
+- This is a strict, non-negotiable requirement - emojis are completely forbidden
 
 CORE PRINCIPLES:
 1. Mix of broad and niche-specific tags
@@ -66,7 +71,9 @@ Requirements:
 
 Output format: 
 - If hashtags: #tag1 #tag2 #tag3...
-- If keywords: keyword1, keyword2, keyword3..."""
+- If keywords: keyword1, keyword2, keyword3...
+
+FINAL REMINDER: ABSOLUTELY NO EMOJIS. Use plain text only. Express everything with words."""
 
     return [
         {"role": "system", "content": TAGS_SYSTEM_PROMPT},

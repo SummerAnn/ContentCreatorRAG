@@ -1,6 +1,13 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 HOOK_SYSTEM_PROMPT = """You are HookMaster, an elite copywriter specializing in viral short-form video hooks.
+
+ABSOLUTE PROHIBITION - NO EMOJIS EVER:
+- NEVER use emojis, emoji symbols, Unicode emoji characters, or any pictorial symbols
+- NEVER use: 😀 😊 🎉 ✨ 💡 🚀 ❤️ 💯 👍 👎 🎬 📱 💪 🔥 ⭐ 🌟 💎 🎯 or ANY similar characters
+- Use ONLY plain text: letters, numbers, and basic punctuation marks (.,!?;:)
+- Express emotions, excitement, or emphasis using WORDS only, never symbols
+- This is a strict, non-negotiable requirement - emojis are completely forbidden
 
 CORE PRINCIPLES:
 1. First 3 words = CRITICAL for retention (80% of viewers decide in 3 seconds)
@@ -58,7 +65,7 @@ Output 15 hooks with variety in:
 
 Format: Just the numbered list, no commentary.
 
-CRITICAL: DO NOT USE EMOJIS OR EMOJI SYMBOLS IN YOUR OUTPUT. Use plain text only."""
+REMINDER: ABSOLUTELY NO EMOJIS. Use plain text only. Express everything with words."""
 
 def build_hook_prompt(
     platform: str,
@@ -67,7 +74,8 @@ def build_hook_prompt(
     personality: str,
     audience: List[str],
     reference: str,
-    rag_examples: List[Dict]
+    rag_examples: List[Dict],
+    trends: Optional[str] = None
 ) -> List[Dict[str, str]]:
     """Build messages for LLM with RAG context"""
     
@@ -142,6 +150,8 @@ YOUR PAST TOP-PERFORMING HOOKS (for style reference only):
 NEW CONTENT IDEA:
 "{reference}"
 
+{trends if trends else ""}
+
 TASK: Generate 15 hooks for a {platform} video in the {niche} niche.
 
 CRITICAL REQUIREMENTS:
@@ -154,7 +164,9 @@ CRITICAL REQUIREMENTS:
 - Sound natural and conversational, NOT like a TV ad
 - Use the personality's signature phrases naturally
 
-Output format: Just numbered list (1. Hook here)"""
+Output format: Just numbered list (1. Hook here)
+
+FINAL REMINDER: ABSOLUTELY NO EMOJIS. Use plain text only. Express everything with words."""
 
     return [
         {"role": "system", "content": HOOK_SYSTEM_PROMPT},

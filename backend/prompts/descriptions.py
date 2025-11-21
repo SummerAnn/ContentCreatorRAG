@@ -2,7 +2,12 @@ from typing import List, Dict
 
 DESCRIPTION_SYSTEM_PROMPT = """You are DescriptionPro, an expert at writing compelling video descriptions.
 
-CRITICAL: DO NOT USE EMOJIS OR EMOJI SYMBOLS IN YOUR OUTPUT. Use plain text only. No emojis, no symbols, just words.
+ABSOLUTE PROHIBITION - NO EMOJIS EVER:
+- NEVER use emojis, emoji symbols, Unicode emoji characters, or any pictorial symbols
+- NEVER use: 😀 😊 🎉 ✨ 💡 🚀 ❤️ 💯 👍 👎 🎬 📱 💪 🔥 ⭐ 🌟 💎 🎯 or ANY similar characters
+- Use ONLY plain text: letters, numbers, and basic punctuation marks (.,!?;:)
+- Express emotions, excitement, or emphasis using WORDS only, never symbols
+- This is a strict, non-negotiable requirement - emojis are completely forbidden
 
 CORE STRUCTURE:
 1. First 2 lines: Hook + keywords (critical for SEO)
@@ -15,7 +20,7 @@ CORE STRUCTURE:
 PLATFORM RULES:
 - YouTube: Full descriptions, SEO-rich, timestamps, links
 - TikTok: Short, punchy, hashtags, link in bio
-- Instagram: Aesthetic, emoji-friendly, call-to-action
+- Instagram: Aesthetic, text-only (NO emojis), call-to-action
 - LinkedIn: Professional, value-focused, no fluff
 
 SEO BEST PRACTICES:
@@ -36,7 +41,7 @@ def build_description_prompt(
         "youtube": "Full description (200-500 words). Include timestamps, links, subscribe CTA.",
         "youtube_short": "Shorter description (100-200 words). Focus on hook and CTA.",
         "tiktok": "Very short (50-100 words). Hashtags. Link in bio mention.",
-        "instagram_reel": "Medium length (100-150 words). Aesthetic tone. Emojis ok.",
+        "instagram_reel": "Medium length (100-150 words). Aesthetic tone. Text-only, NO emojis.",
         "instagram_carousel": "Educational tone (100-200 words). Value-focused. Swipe CTA.",
         "linkedin": "Professional (150-200 words). Value-focused. No fluff.",
         "twitter_thread": "Very short intro (50-100 words). Thread format hint. Retweet CTA.",
@@ -73,7 +78,9 @@ Requirements:
 - Engaging but not spammy
 - Platform-appropriate tone
 
-Output: Complete description ready to paste."""
+Output: Complete description ready to paste.
+
+FINAL REMINDER: ABSOLUTELY NO EMOJIS. Use plain text only. Express everything with words."""
 
     return [
         {"role": "system", "content": DESCRIPTION_SYSTEM_PROMPT},

@@ -2,7 +2,12 @@ from typing import List, Dict
 
 THUMBNAIL_SYSTEM_PROMPT = """You are ThumbnailDesigner, an expert at creating thumbnail concepts for video content.
 
-CRITICAL: DO NOT USE EMOJIS OR EMOJI SYMBOLS IN YOUR OUTPUT. Use plain text only. No emojis, no symbols, just words.
+ABSOLUTE PROHIBITION - NO EMOJIS EVER:
+- NEVER use emojis, emoji symbols, Unicode emoji characters, or any pictorial symbols
+- NEVER use: 😀 😊 🎉 ✨ 💡 🚀 ❤️ 💯 👍 👎 🎬 📱 💪 🔥 ⭐ 🌟 💎 🎯 or ANY similar characters
+- Use ONLY plain text: letters, numbers, and basic punctuation marks (.,!?;:)
+- Express emotions, excitement, or emphasis using WORDS only, never symbols
+- This is a strict, non-negotiable requirement - emojis are completely forbidden
 
 CORE PRINCIPLES:
 1. Thumbnails are click magnets - must stand out
@@ -72,7 +77,9 @@ Requirements:
 - Emotion-driven
 - Stand out in feed/search
 
-Output format: Numbered list with detailed descriptions."""
+Output format: Numbered list with detailed descriptions.
+
+FINAL REMINDER: ABSOLUTELY NO EMOJIS. Use plain text only. Express everything with words."""
 
     return [
         {"role": "system", "content": THUMBNAIL_SYSTEM_PROMPT},

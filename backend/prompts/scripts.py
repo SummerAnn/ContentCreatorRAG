@@ -2,7 +2,12 @@ from typing import List, Dict
 
 SCRIPT_SYSTEM_PROMPT = """You are ScriptPro, an expert short-form video scriptwriter.
 
-CRITICAL: DO NOT USE EMOJIS OR EMOJI SYMBOLS IN YOUR OUTPUT. Use plain text only. No emojis, no symbols, just words.
+ABSOLUTE PROHIBITION - NO EMOJIS EVER:
+- NEVER use emojis, emoji symbols, Unicode emoji characters, or any pictorial symbols
+- NEVER use: 😀 😊 🎉 ✨ 💡 🚀 ❤️ 💯 👍 👎 🎬 📱 💪 🔥 ⭐ 🌟 💎 🎯 or ANY similar characters
+- Use ONLY plain text: letters, numbers, and basic punctuation marks (.,!?;:)
+- Express emotions, excitement, or emphasis using WORDS only, never symbols
+- This is a strict, non-negotiable requirement - emojis are completely forbidden
 
 You write scripts that:
 - Are spoken naturally (not read like an essay or TV ad)
@@ -54,7 +59,8 @@ def build_script_prompt(
     personality: str,
     audience: List[str],
     reference: str,
-    rag_examples: List[Dict]
+    rag_examples: List[Dict],
+    has_voiceover: bool = True
 ) -> List[Dict[str, str]]:
     
     # Get user's past scripts
@@ -125,23 +131,28 @@ CONTENT REFERENCE:
 YOUR PAST SCRIPT STYLE (for reference):
 {chr(10).join(f'--- Example {i+1} ---{chr(10)}{script[:200]}...' for i, script in enumerate(past_scripts)) if past_scripts else "No past scripts available. Write in a natural, conversational style."}
 
-TASK: Write a {duration}-second voiceover script for this {platform} video.
+TASK: {'Write a voiceover script' if has_voiceover else 'Create text overlays and captions'} for this {duration}-second {platform} video.
+
+{'VOICEOVER MODE:' if has_voiceover else 'SILENT MODE (NO TALKING):'}
+{('Write a spoken script with voiceover/narration. The script will be read aloud.' if has_voiceover else 'Create text overlays and captions. NO voiceover or talking. Use on-screen text, captions, and visual storytelling. Format as text overlays with timing.')}
 
 CRITICAL REQUIREMENTS:
 1. Start with the hook (you can refine it slightly to match personality)
 2. Match the {personality} personality: {personality_guide}
 3. Target audiences: {", ".join(audience)} - {audience_guide}
-4. Natural, conversational language - NOT like a TV ad or commercial
-5. Short sentences, easy to speak
+{('4. Natural, conversational language - NOT like a TV ad or commercial' if has_voiceover else '4. Text overlays should be short, punchy, and easy to read (3-7 words per overlay)')}
+{('5. Short sentences, easy to speak' if has_voiceover else '5. Use text overlays, captions, and on-screen text only')}
 6. Include [visual cues] for what's on screen
 7. Add (timestamp) markers every few lines
 8. Build to a clear CTA at the end
-9. Sound like a real person talking, not reading a script
+{('9. Sound like a real person talking, not reading a script' if has_voiceover else '9. NO voiceover or narration - text and visuals only')}
 10. Use personality-appropriate phrases naturally
 
-Target {target_words} words for {duration}s at {wpm} WPM.
+{('Target ' + str(target_words) + ' words for ' + str(duration) + 's at ' + str(wpm) + ' WPM.' if has_voiceover else 'Create 8-15 text overlays with timing. Each overlay should be 3-7 words.')}
 
-Output: Just the script, formatted with timestamps."""
+Output: {'Just the script, formatted with timestamps.' if has_voiceover else 'Text overlays with timestamps, formatted as: [0:00] Text overlay here'}
+
+FINAL REMINDER: ABSOLUTELY NO EMOJIS. Use plain text only. Express everything with words."""
 
     return [
         {"role": "system", "content": SCRIPT_SYSTEM_PROMPT},

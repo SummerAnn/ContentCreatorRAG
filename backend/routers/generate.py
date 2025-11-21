@@ -16,6 +16,7 @@ def set_globals(emb, vs, llm):
     vector_store = vs
     llm_backend = llm
 from core.rag_engine import RAGEngine
+from core.trends import trend_service
 from prompts import hooks, scripts, shots, music, titles, descriptions, tags, thumbnails, beatmap, cta, tools
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,15 @@ async def generate_hooks(req: GenerateRequest):
             top_k=10
         )
         
-        # Build prompt with RAG context
+        # Get trending topics
+        trends = trend_service.get_trends(
+            platform=req.platform,
+            niche=req.niche,
+            use_cache=True
+        )
+        trends_text = trend_service.format_trends_for_prompt(trends, max_count=5)
+        
+        # Build prompt with RAG context and trends
         messages = hooks.build_hook_prompt(
             platform=req.platform,
             niche=req.niche,
@@ -64,7 +73,8 @@ async def generate_hooks(req: GenerateRequest):
             personality=req.personality,
             audience=req.audience,
             reference=req.reference_text or "No specific reference",
-            rag_examples=rag_results
+            rag_examples=rag_results,
+            trends=trends_text
         )
         
         # Generate (streaming)
@@ -104,6 +114,7 @@ async def generate_script(req: GenerateRequest):
         )
         
         # Build prompt
+        has_voiceover = req.options.get("has_voiceover", True)
         messages = scripts.build_script_prompt(
             platform=req.platform,
             niche=req.niche,
@@ -112,7 +123,8 @@ async def generate_script(req: GenerateRequest):
             personality=req.personality,
             audience=req.audience,
             reference=req.reference_text or "",
-            rag_examples=rag_results
+            rag_examples=rag_results,
+            has_voiceover=has_voiceover
         )
         
         # Generate

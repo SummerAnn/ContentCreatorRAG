@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Download, Check, Edit, CheckCheck, ArrowRight } from 'lucide-react';
+import { Copy, Download, Check, Edit, CheckCheck, ArrowRight, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import clsx from 'clsx';
 
@@ -13,6 +13,7 @@ interface GeneratedContentProps {
   messageId?: number;
   onEdit?: (id: number, content: string) => void;
   onUseForNext?: (content: string, type: string) => void;
+  onRegenerate?: () => void;
 }
 
 const typeConfig: Record<string, any> = {
@@ -103,7 +104,8 @@ export default function GeneratedContent({
   onSelectHook,
   messageId,
   onEdit,
-  onUseForNext
+  onUseForNext,
+  onRegenerate
 }: GeneratedContentProps) {
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -188,6 +190,16 @@ export default function GeneratedContent({
             )}
           </div>
           <div className="flex gap-2">
+            {onRegenerate && !isStreaming && !isEditing && (
+              <button
+                onClick={onRegenerate}
+                className={clsx('p-2 rounded-lg transition flex items-center gap-1.5', config.buttonClass)}
+                title="Regenerate content"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span className="text-xs font-medium hidden sm:inline">Regenerate</span>
+              </button>
+            )}
             {!isEditing && onEdit && messageId !== undefined && (
               <button
                 onClick={() => setIsEditing(true)}

@@ -7,7 +7,8 @@ import ReferenceInput from './ReferenceInput';
 import GeneratedContent from './GeneratedContent';
 import PersonalitySelector from './PersonalitySelector';
 import AudienceSelector from './AudienceSelector';
-import { Send, Sparkles } from 'lucide-react';
+import { Send, Sparkles, Settings } from 'lucide-react';
+import SettingsPanel from './SettingsPanel';
 import { historyStorage, Conversation } from '@/lib/history';
 
 interface Message {
@@ -42,12 +43,14 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
   const [personality, setPersonality] = useState(initialAgent?.personality || initialConversation?.personality || 'friendly');
   const [audience, setAudience] = useState<string[]>(initialAgent?.audience || initialConversation?.audience || ['gen_z']);
   const [reference, setReference] = useState(initialAgent?.reference || initialConversation?.messages[0]?.content || initialIdea || '');
+  const [hasVoiceover, setHasVoiceover] = useState(true); // Default to talking/voiceover
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentGeneration, setCurrentGeneration] = useState<{ type: string; content: string } | null>(null);
   const [selectedHook, setSelectedHook] = useState<string>('');
   const [editingContent, setEditingContent] = useState<{ id: number; content: string } | null>(null);
   const [chatInput, setChatInput] = useState('');
   const [isChatting, setIsChatting] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Update when agent, conversation, or idea changes
@@ -177,7 +180,8 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
                 duration: 60,
                 chosen_hook: selectedHook || messages.find(m => m.type === 'hooks')?.content.split('\n')[0]?.replace(/^\d+\.\s+"/, '').replace(/"$/, '') || '',
                 script: messages.find(m => m.type === 'script')?.content || '',
-                content_type: contentType
+                content_type: contentType,
+                has_voiceover: hasVoiceover
               }
         })
       });
@@ -415,8 +419,18 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
   return (
     <div className="flex flex-col h-full bg-[var(--background)]">
       {/* Header */}
-      <header className="bg-white dark:bg-[#0f0f0f] border-b luxury-border px-6 py-5 luxury-shadow">
+      <header className="bg-white dark:bg-[#0f0f0f] border-b luxury-border px-6 py-5 luxury-shadow flex items-center justify-between">
         <h2 className="text-xl font-semibold text-[var(--foreground)] tracking-tight">Content Generator</h2>
+        {!isFirstMessage && (
+          <button
+            onClick={() => setShowSettings(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition luxury-shadow"
+            title="Edit settings"
+          >
+            <Settings className="w-4 h-4" />
+            <span className="text-sm font-medium">Settings</span>
+          </button>
+        )}
       </header>
 
       {/* Messages area */}
@@ -470,6 +484,49 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
               </select>
 
               <ReferenceInput value={reference} onChange={setReference} />
+
+              {/* Voiceover / Talking Option */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Audio Style *
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setHasVoiceover(true)}
+                    className={`
+                      p-4 border-2 rounded-xl text-left transition-all luxury-shadow
+                      ${hasVoiceover
+                        ? 'border-[var(--accent)] bg-[var(--accent)]/10 dark:bg-[var(--accent)]/20'
+                        : 'luxury-border hover:border-[var(--accent)]/50 bg-white dark:bg-[#1a1a1a]'
+                      }
+                    `}
+                  >
+                    <div className="font-semibold text-sm text-gray-800 dark:text-gray-200 mb-1">
+                      With Voiceover / Talking
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      Script includes spoken narration or voiceover
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setHasVoiceover(false)}
+                    className={`
+                      p-4 border-2 rounded-xl text-left transition-all luxury-shadow
+                      ${!hasVoiceover
+                        ? 'border-[var(--accent)] bg-[var(--accent)]/10 dark:bg-[var(--accent)]/20'
+                        : 'luxury-border hover:border-[var(--accent)]/50 bg-white dark:bg-[#1a1a1a]'
+                      }
+                    `}
+                  >
+                    <div className="font-semibold text-sm text-gray-800 dark:text-gray-200 mb-1">
+                      No Talking / Silent
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      Text overlays and music only, no voiceover
+                    </div>
+                  </button>
+                </div>
+              </div>
 
               {/* Generate Buttons */}
               <div className="pt-4 space-y-3">
@@ -604,6 +661,11 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
                         generateContent('script');
                       }
                     }}
+                    onRegenerate={() => {
+                      if (msg.type) {
+                        generateContent(msg.type);
+                      }
+                    }}
                   />
                 );
               }
@@ -621,6 +683,11 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
                     setSelectedHook(content);
                     // Auto-generate script with selected hook
                     setTimeout(() => generateContent('script'), 500);
+                  }
+                }}
+                onRegenerate={() => {
+                  if (currentGeneration.type) {
+                    generateContent(currentGeneration.type as any);
                   }
                 }}
               />
@@ -764,6 +831,35 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
           </div>
         </div>
       )}
+
+      {/* Settings Panel */}
+      <SettingsPanel
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        platform={platform}
+        niche={niche}
+        goal={goal}
+        personality={personality}
+        audience={audience}
+        reference={reference}
+        hasVoiceover={hasVoiceover}
+        onSave={(settings) => {
+          setPlatform(settings.platform);
+          setNiche(settings.niche);
+          setGoal(settings.goal);
+          setPersonality(settings.personality);
+          setAudience(settings.audience);
+          setReference(settings.reference);
+          setHasVoiceover(settings.hasVoiceover);
+        }}
+        onRegenerate={() => {
+          // Find the last generated content type and regenerate it
+          const lastGenerated = messages.filter(m => m.type).pop();
+          if (lastGenerated && lastGenerated.type) {
+            generateContent(lastGenerated.type);
+          }
+        }}
+      />
     </div>
   );
 }
