@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f7f5f0; /* Warm cream with subtle luxury */
+  --foreground: #1f1f1f; /* Deep charcoal */
+  --accent: #c9a961; /* Refined gold */
+  --accent-dark: #b8954a;
+  --accent-light: #e8d4a8; /* Light gold */
+  --muted: #ebe8e0; /* Soft cream */
+  --border: #d9d4c7; /* Refined border */
+  --shadow: rgba(0, 0, 0, 0.08);
+  --shadow-lg: rgba(0, 0, 0, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f0f0f; /* Rich black */
+    --foreground: #e5e3de; /* Warm off-white */
+    --accent: #d4af6a; /* Premium gold */
+    --accent-dark: #c49f5a;
+    --accent-light: #e8d4a8;
+    --muted: #1a1a1a; /* Deep charcoal */
+    --border: #2a2a2a; /* Refined dark border */
+    --shadow: rgba(0, 0, 0, 0.3);
+    --shadow-lg: rgba(0, 0, 0, 0.5);
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-manrope), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom scrollbar - Luxury styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-dark);
+}
+
+/* Luxury shadow utilities */
+@layer utilities {
+  .luxury-shadow {
+    box-shadow: 0 2px 8px var(--shadow), 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  
+  .luxury-shadow-lg {
+    box-shadow: 0 8px 24px var(--shadow-lg), 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  .luxury-border {
+    border: 1px solid var(--border);
+  }
+  
+  .luxury-accent {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  }
+  
+  .luxury-text-gradient {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}

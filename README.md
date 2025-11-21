@@ -1,0 +1,225 @@
+# 🎬 CreatorFlow AI
+
+**100% Free & Open Source AI Platform for Content Creators**
+
+Generate viral hooks, scripts, shot lists, and music prompts for YouTube Shorts, TikTok, Instagram Reels, and more—powered by local AI models with no API costs.
+
+---
+
+## ✨ Features
+
+- 🎯 **Platform-Specific Generation**: Optimized for YouTube, TikTok, Instagram, LinkedIn
+- 🧠 **RAG-Powered**: Learns from YOUR best-performing content
+- 📝 **Complete Content Packages**: Hooks, scripts, shot lists, music prompts
+- 🆓 **100% Free**: Runs locally with open-source models
+- 🔒 **Privacy-First**: Your content never leaves your machine
+- 💬 **ChatGPT-like UI**: Intuitive conversational interface
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Docker & Docker Compose
+- 8GB RAM minimum (16GB recommended)
+- 20GB free disk space
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/creatorflow
+cd creatorflow
+
+# Run setup script
+chmod +x setup.sh
+./setup.sh
+
+# Open browser
+open http://localhost:3000
+```
+
+That's it! The setup script will:
+1. Build all containers
+2. Download the AI model (~4.7GB)
+3. Start all services
+
+---
+
+## 📖 Usage
+
+### 1. First Time Setup
+
+- Upload 5-10 of your best-performing content (for RAG learning)
+- Set your brand voice preferences
+
+### 2. Generate Content
+
+1. Select platform (YouTube Short, TikTok, Instagram Reel, etc.)
+2. Choose niche (travel, food, tech, beauty, etc.)
+3. Set goal (grow followers, drive clicks, educate, etc.)
+4. Provide reference (image, link, or description)
+5. Generate hooks, scripts, shots, and music!
+
+### 3. Export & Use
+
+- Copy to clipboard
+- Download as PDF
+- Save to project folder
+
+---
+
+## 🏗️ Architecture
+
+```
+Frontend (Next.js) ← → Backend (FastAPI) ← → Ollama (Local LLM)
+                              ↓
+                    RAG Engine + Vector Store
+                         (FAISS + SQLite)
+```
+
+**Tech Stack:**
+
+- Frontend: Next.js 14, TypeScript, Tailwind CSS
+- Backend: FastAPI, Python 3.11
+- LLM: Ollama (Llama 3.1 8B)
+- Embeddings: Sentence Transformers
+- Vector Store: FAISS + SQLite
+
+---
+
+## 🛠️ Development
+
+### Manual Setup (without Docker)
+
+#### Backend
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Install and start Ollama separately
+ollama pull llama3.1:8b-instruct
+
+# Run backend
+uvicorn main:app --reload
+```
+
+#### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Running Tests
+
+```bash
+# Backend tests
+cd backend
+pytest
+
+# Frontend tests
+cd frontend
+npm test
+```
+
+---
+
+## 📁 Project Structure
+
+```
+creatorflow/
+├── backend/          # FastAPI server
+│   ├── core/        # RAG engine, LLM, embeddings
+│   ├── prompts/     # Platform-specific prompt templates
+│   └── routers/     # API endpoints
+├── frontend/         # Next.js app
+│   ├── app/         # Pages and layouts
+│   └── components/  # React components
+└── data/            # User data (gitignored)
+```
+
+---
+
+## 🎨 Supported Platforms
+
+- ✅ YouTube Shorts
+- ✅ YouTube Long-form
+- ✅ TikTok
+- ✅ Instagram Reels
+- ✅ Instagram Carousels
+- ✅ LinkedIn Posts
+- ✅ Twitter/X Threads
+- ✅ Pinterest Pins
+- ✅ Podcast Clips
+
+## 🖼️ Image Reference Support
+
+Upload reference images and our CLIP-powered vision model will understand the visual context to generate better, more relevant content suggestions.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🌟 Roadmap
+
+### Phase 1 (Current)
+- [x] Basic RAG implementation
+- [x] Hook generator
+- [x] Script generator
+- [x] Shot list generator
+- [x] Music prompt generator
+
+### Phase 2
+- [x] Image reference support (CLIP)
+- [ ] Performance tracking
+- [ ] A/B testing suggestions
+- [ ] Trend integration
+
+### Phase 3
+- [ ] Multi-user support
+- [ ] Cloud deployment option
+- [ ] Mobile app
+- [ ] Plugin system
+
+---
+
+## 💬 Support
+
+- 📧 Email: support@creatorflow.ai
+- 💬 Discord: [Join our community](https://discord.gg/creatorflow)
+- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/creatorflow/issues)
+
+---
+
+## 🙏 Acknowledgments
+
+- Ollama for local LLM infrastructure
+- Sentence Transformers for embeddings
+- The open-source AI community
+
+---
+
+Made with ❤️ for content creators
+
