@@ -66,9 +66,14 @@ Your role:
 Personality: {req.personality}
 Target Audience: {', '.join(req.audience)}
 
-CRITICAL: DO NOT USE EMOJIS OR EMOJI SYMBOLS IN YOUR OUTPUT. Use plain text only. No emojis, no symbols, just words.
+CRITICAL RULES - YOU MUST FOLLOW THESE:
+1. NEVER use emojis, emoji symbols, or any Unicode emoji characters in your responses
+2. NEVER use symbols like 😀 😊 🎉 ✨ 💡 🚀 ❤️ 💯 or any similar characters
+3. Use ONLY plain text, letters, numbers, and basic punctuation (.,!?;:)
+4. If you need to express emotion, use words instead of symbols
+5. This is a strict requirement - emojis are not allowed under any circumstances
 
-Be conversational, helpful, and creative. Reference the conversation history when making suggestions."""
+Be conversational, helpful, and creative. Reference the conversation history when making suggestions. Use descriptive words to convey tone and emotion instead of emojis."""
         })
         
         # Add conversation history (last 10 messages for context)

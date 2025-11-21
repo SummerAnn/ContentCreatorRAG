@@ -8,12 +8,18 @@ Generate viral hooks, scripts, shot lists, and music prompts for YouTube Shorts,
 
 ## ✨ Features
 
-- 🎯 **Platform-Specific Generation**: Optimized for YouTube, TikTok, Instagram, LinkedIn
+- 🎯 **Platform-Specific Generation**: Optimized for YouTube, TikTok, Instagram, LinkedIn, Twitter/X, Pinterest, Podcasts
 - 🧠 **RAG-Powered**: Learns from YOUR best-performing content
-- 📝 **Complete Content Packages**: Hooks, scripts, shot lists, music prompts
-- 🆓 **100% Free**: Runs locally with open-source models
+- 📝 **Complete Content Packages**: Hooks, scripts, shot lists, music prompts, titles, descriptions, tags, thumbnails, beatmaps, CTAs
+- 🆓 **100% Free**: Runs locally with open-source models (no API costs)
 - 🔒 **Privacy-First**: Your content never leaves your machine
-- 💬 **ChatGPT-like UI**: Intuitive conversational interface
+- 💬 **ChatGPT-like UI**: Intuitive conversational interface with collapsible sidebar
+- 📓 **Idea Notes**: Brainstorm and save ideas, then develop them with AI
+- 💬 **Continue Conversations**: Chat with AI to refine, revise, or expand on generated content
+- 🎲 **Random Idea Roaster**: Get instant inspiration with random content ideas
+- 📚 **Conversation History**: Save and revisit past conversations
+- 🎨 **Luxury UI**: Beautiful black & cream design with Manrope font
+- 🔧 **Tool Recommendations**: Get AI-suggested tools based on your content type
 
 ---
 
@@ -58,15 +64,27 @@ That's it! The setup script will:
 
 1. Select platform (YouTube Short, TikTok, Instagram Reel, etc.)
 2. Choose niche (travel, food, tech, beauty, etc.)
-3. Set goal (grow followers, drive clicks, educate, etc.)
-4. Provide reference (image, link, or description)
-5. Generate hooks, scripts, shots, and music!
+3. Set personality (friendly, educational, motivational, etc.)
+4. Select target audience (Gen Z, Millennials, Professionals, etc.)
+5. Set goal (grow followers, drive clicks, educate, UGC, brand deals, etc.)
+6. Provide reference (image, link, or description)
+7. Generate hooks, scripts, shots, music, titles, descriptions, tags, thumbnails, beatmaps, CTAs, and tool recommendations!
 
-### 3. Export & Use
+### 3. Workflow Features
 
-- Copy to clipboard
-- Download as PDF
-- Save to project folder
+- **Idea Notes**: Click "Idea Notes" in the sidebar to brainstorm and save ideas. Click "Develop with AI" to send your idea to the chat.
+- **Random Idea Roaster**: Get instant random content ideas with platform, niche, personality, and audience suggestions.
+- **Continue Chatting**: After generating content, continue the conversation to refine, revise, or get more ideas.
+- **Conversation History**: Access your past conversations from the sidebar.
+- **Collapsible Sidebar**: Minimize the sidebar to icons-only for more screen space (like ChatGPT).
+
+### 4. Export & Use
+
+- Copy generated content to clipboard
+- Edit generated content inline
+- Select hooks to generate scripts from them
+- Continue chatting to refine content
+- Save conversations for later
 
 ---
 
@@ -190,12 +208,25 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Script generator
 - [x] Shot list generator
 - [x] Music prompt generator
+- [x] Titles, descriptions, tags, thumbnails generator
+- [x] Beatmap/retention map generator
+- [x] CTA generator
+- [x] Tool recommendations
+- [x] Image reference support (CLIP)
+- [x] Link extraction
+- [x] Conversation history
+- [x] Continue chatting feature
+- [x] Idea Notes / Brainstorming
+- [x] Random Idea Roaster
+- [x] Collapsible sidebar
+- [x] Content editing
+- [x] Hook selection workflow
 
 ### Phase 2
-- [x] Image reference support (CLIP)
 - [ ] Performance tracking
 - [ ] A/B testing suggestions
 - [ ] Trend integration
+- [ ] Analytics-aware feedback
 
 ### Phase 3
 - [ ] Multi-user support

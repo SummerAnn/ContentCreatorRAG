@@ -110,15 +110,22 @@ export default function GeneratedContent({
   const [editedContent, setEditedContent] = useState(content);
   const config = typeConfig[type];
 
-  // Parse hooks for selection
+  // Parse hooks for selection - handles both quoted and unquoted formats
   const parseHooks = (text: string): Array<{ num: number; text: string }> => {
     const lines = text.split('\n').filter(line => line.trim());
     const hooks: Array<{ num: number; text: string }> = [];
     
     lines.forEach(line => {
-      const match = line.match(/^(\d+)\.\s+"(.+)"\s*$/);
+      // Try quoted format first: "1. "Hook text""
+      let match = line.match(/^(\d+)\.\s+"(.+)"\s*$/);
       if (match) {
         hooks.push({ num: parseInt(match[1]), text: match[2] });
+      } else {
+        // Try unquoted format: "1. Hook text."
+        match = line.match(/^(\d+)\.\s+(.+?)(?:\.\s*)?$/);
+        if (match) {
+          hooks.push({ num: parseInt(match[1]), text: match[2].trim() });
+        }
       }
     });
     
@@ -228,23 +235,28 @@ export default function GeneratedContent({
             <>
               {type === 'hooks' && hooks.length > 0 ? (
                 <div className="space-y-2">
+                  <p className="text-xs font-medium text-[var(--foreground)]/70 mb-2 tracking-tight">Click a hook to select it:</p>
                   {hooks.map((hook) => (
                     <button
                       key={hook.num}
-                      onClick={() => onSelectHook?.(hook.text)}
+                      onClick={() => {
+                        if (onSelectHook) {
+                          onSelectHook(hook.text);
+                        }
+                      }}
                       className={clsx(
-                        'w-full text-left p-3 rounded-xl border-2 transition-all luxury-shadow',
+                        'w-full text-left p-3 rounded-xl border-2 transition-all luxury-shadow cursor-pointer',
                         selectedHook === hook.text
                           ? 'border-[var(--accent)] bg-[var(--accent)]/10 dark:bg-[var(--accent)]/20'
-                          : 'luxury-border hover:border-[var(--accent)]/50 bg-white/50 dark:bg-[#1a1a1a]'
+                          : 'luxury-border hover:border-[var(--accent)]/50 bg-white dark:bg-[#1a1a1a]'
                       )}
                     >
                       <div className="flex items-start gap-2">
-                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 min-w-[24px]">
+                        <span className="text-xs font-semibold text-[var(--foreground)]/60 min-w-[24px]">
                           {hook.num}.
                         </span>
-                        <span className="text-sm text-gray-800 dark:text-gray-200 flex-1">
-                          "{hook.text}"
+                        <span className="text-sm text-[var(--foreground)] flex-1 tracking-tight">
+                          {hook.text}
                         </span>
                         {selectedHook === hook.text && (
                           <Check className="w-4 h-4 text-[var(--accent)] flex-shrink-0 mt-0.5" />
@@ -254,12 +266,14 @@ export default function GeneratedContent({
                   ))}
                   {selectedHook && (
                     <div className="mt-4 p-3 bg-[var(--accent)]/10 dark:bg-[var(--accent)]/20 border border-[var(--accent)] rounded-xl luxury-shadow">
-                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      <p className="text-sm text-[var(--foreground)] mb-3 tracking-tight">
                         <strong>Selected Hook:</strong> "{selectedHook}"
                       </p>
                       {onUseForNext && (
                         <button
-                          onClick={() => onUseForNext(selectedHook, 'hooks')}
+                          onClick={() => {
+                            onUseForNext(selectedHook, 'hooks');
+                          }}
                           className="w-full flex items-center justify-center gap-2 px-4 py-2 luxury-accent hover:opacity-90 text-white rounded-xl transition-all text-sm font-medium luxury-shadow"
                         >
                           Use This Hook to Generate Script <ArrowRight className="w-4 h-4" />

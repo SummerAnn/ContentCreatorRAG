@@ -1,25 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, X, Plus, History, Settings, Database, Bot, Sparkles, Home } from 'lucide-react';
+import { Menu, X, Plus, History, Settings, Database, Bot, Sparkles, Home, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import AgentManager from './AgentManager';
 import RandomIdeaRoaster from './RandomIdeaRoaster';
 import ConversationHistory from './ConversationHistory';
+import IdeaNotes from './IdeaNotes';
 
 interface SidebarProps {
   isOpen: boolean;
+  isCollapsed?: boolean;
   onToggle: () => void;
+  onCollapse?: () => void;
   onAgentSelect?: (agent: { platform: string; niche: string; goal: string; personality?: string; audience?: string[]; reference?: string }) => void;
   onHome?: () => void;
   onLoadConversation?: (conversation: any) => void;
+  onDevelopIdea?: (idea: string) => void;
 }
 
-export default function Sidebar({ isOpen, onToggle, onAgentSelect, onHome, onLoadConversation }: SidebarProps) {
+export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onCollapse, onAgentSelect, onHome, onLoadConversation, onDevelopIdea }: SidebarProps) {
   const [showAgents, setShowAgents] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showIdeaRoaster, setShowIdeaRoaster] = useState(false);
+  const [showIdeaNotes, setShowIdeaNotes] = useState(false);
 
   const handleAgentSelect = (agent: any) => {
     if (onAgentSelect) {
@@ -48,84 +53,155 @@ export default function Sidebar({ isOpen, onToggle, onAgentSelect, onHome, onLoa
       <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-40
-          w-64 bg-[#0f0f0f] dark:bg-[#0a0a0a] text-white
-          transform transition-transform duration-300 ease-in-out
+          ${isCollapsed ? 'w-16' : 'w-64'} bg-[#0f0f0f] dark:bg-[#0a0a0a] text-white
+          transform transition-all duration-300 ease-in-out
           luxury-shadow-lg
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
-        <div className="flex flex-col h-full p-5">
-          {/* Logo */}
-          <div className="mb-8 mt-4">
-            <h1 className="text-2xl font-bold text-white tracking-tight">CreatorFlow AI</h1>
-            <p className="text-white/60 text-xs tracking-wide uppercase mt-1">Content Creation Platform</p>
+        <div className="flex flex-col h-full p-4">
+          {/* Collapse Button - Desktop Only */}
+          <div className="hidden lg:flex justify-end mb-4">
+            <button
+              onClick={onCollapse}
+              className="p-2 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-all"
+              title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            </button>
           </div>
+
+          {/* Logo */}
+          {!isCollapsed && (
+            <div className="mb-8 mt-2">
+              <h1 className="text-2xl font-bold text-white tracking-tight">CreatorFlow AI</h1>
+              <p className="text-white/60 text-xs tracking-wide uppercase mt-1">Content Creation Platform</p>
+            </div>
+          )}
 
           {/* Navigation */}
           <nav className="flex-1 space-y-2">
             <button 
               onClick={() => onHome?.()}
-              className="w-full flex items-center gap-3 px-4 py-3 luxury-accent hover:opacity-90 text-white rounded-lg transition-all luxury-shadow"
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 luxury-accent hover:opacity-90 text-white rounded-lg transition-all luxury-shadow group relative`}
+              title={isCollapsed ? 'Home' : undefined}
             >
               <Home size={20} />
-              <span className="font-medium">Home</span>
+              {!isCollapsed && <span className="font-medium">Home</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Home
+                </span>
+              )}
             </button>
 
             <button 
               onClick={() => setShowAgents(true)}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border"
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'New Project' : undefined}
             >
               <Plus size={20} />
-              <span>New Project</span>
+              {!isCollapsed && <span>New Project</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  New Project
+                </span>
+              )}
             </button>
 
             <button 
               onClick={() => setShowIdeaRoaster(true)}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border"
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'Random Idea Roaster' : undefined}
             >
               <Sparkles size={20} />
-              <span>Random Idea Roaster</span>
+              {!isCollapsed && <span>Random Idea Roaster</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Random Idea Roaster
+                </span>
+              )}
+            </button>
+
+            <button 
+              onClick={() => setShowIdeaNotes(true)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'Idea Notes' : undefined}
+            >
+              <FileText size={20} />
+              {!isCollapsed && <span>Idea Notes</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Idea Notes
+                </span>
+              )}
             </button>
 
             <button 
               onClick={() => setShowAgents(true)}
-              className="w-full flex items-center gap-3 px-4 py-3 text-white/70 rounded-lg hover:bg-white/5 transition-all"
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 text-white/70 rounded-lg hover:bg-white/5 transition-all group relative`}
+              title={isCollapsed ? 'My Agents' : undefined}
             >
               <Bot size={20} />
-              <span>My Agents</span>
+              {!isCollapsed && <span>My Agents</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  My Agents
+                </span>
+              )}
             </button>
 
             <button 
               onClick={() => setShowHistory(true)}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border"
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'History' : undefined}
             >
               <History size={20} />
-              <span>History</span>
+              {!isCollapsed && <span>History</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  History
+                </span>
+              )}
             </button>
 
             <button 
               onClick={() => setShowLibrary(true)}
-              className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-900 transition"
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 text-white/70 rounded-lg hover:bg-white/5 transition-all group relative`}
+              title={isCollapsed ? 'My Content Library' : undefined}
             >
               <Database size={20} />
-              <span>My Content Library</span>
+              {!isCollapsed && <span>My Content Library</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  My Content Library
+                </span>
+              )}
             </button>
 
             <button 
               onClick={() => setShowSettings(true)}
-              className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-900 transition"
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 text-white/70 rounded-lg hover:bg-white/5 transition-all group relative`}
+              title={isCollapsed ? 'Settings' : undefined}
             >
               <Settings size={20} />
-              <span>Settings</span>
+              {!isCollapsed && <span>Settings</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Settings
+                </span>
+              )}
             </button>
           </nav>
 
           {/* Footer */}
-          <div className="mt-auto pt-4 border-t border-gray-700">
-            <p className="text-gray-400 text-xs text-center">
-              Version 1.0.0
-            </p>
-          </div>
+          {!isCollapsed && (
+            <div className="mt-auto pt-4 border-t border-gray-700">
+              <p className="text-gray-400 text-xs text-center">
+                Version 1.0.0
+              </p>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -145,6 +221,20 @@ export default function Sidebar({ isOpen, onToggle, onAgentSelect, onHome, onLoa
           onSelectIdea={(idea) => {
             handleAgentSelect(idea);
             setShowIdeaRoaster(false);
+          }}
+        />
+      )}
+
+      {/* Idea Notes Modal */}
+      {showIdeaNotes && (
+        <IdeaNotes
+          isOpen={showIdeaNotes}
+          onClose={() => setShowIdeaNotes(false)}
+          onDevelopIdea={(idea) => {
+            if (onDevelopIdea) {
+              onDevelopIdea(idea);
+            }
+            setShowIdeaNotes(false);
           }}
         />
       )}

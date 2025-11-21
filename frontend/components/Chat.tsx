@@ -20,9 +20,10 @@ interface Message {
 interface ChatProps {
   initialAgent?: { platform: string; niche: string; goal: string; personality?: string; audience?: string[]; reference?: string } | null;
   initialConversation?: Conversation | null;
+  initialIdea?: string | null;
 }
 
-export default function Chat({ initialAgent, initialConversation }: ChatProps) {
+export default function Chat({ initialAgent, initialConversation, initialIdea }: ChatProps) {
   const [conversationId, setConversationId] = useState<string>(() => initialConversation?.id || `conv_${Date.now()}`);
   const [messages, setMessages] = useState<Message[]>(() => {
     if (initialConversation) {
@@ -40,7 +41,7 @@ export default function Chat({ initialAgent, initialConversation }: ChatProps) {
   const [goal, setGoal] = useState(initialAgent?.goal || initialConversation?.goal || 'grow_followers');
   const [personality, setPersonality] = useState(initialAgent?.personality || initialConversation?.personality || 'friendly');
   const [audience, setAudience] = useState<string[]>(initialAgent?.audience || initialConversation?.audience || ['gen_z']);
-  const [reference, setReference] = useState(initialAgent?.reference || initialConversation?.messages[0]?.content || '');
+  const [reference, setReference] = useState(initialAgent?.reference || initialConversation?.messages[0]?.content || initialIdea || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentGeneration, setCurrentGeneration] = useState<{ type: string; content: string } | null>(null);
   const [selectedHook, setSelectedHook] = useState<string>('');
@@ -49,7 +50,7 @@ export default function Chat({ initialAgent, initialConversation }: ChatProps) {
   const [isChatting, setIsChatting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Update when agent or conversation changes
+  // Update when agent, conversation, or idea changes
   useEffect(() => {
     if (initialConversation) {
       setPlatform(initialConversation.platform);
@@ -58,6 +59,10 @@ export default function Chat({ initialAgent, initialConversation }: ChatProps) {
       setPersonality(initialConversation.personality || 'friendly');
       setAudience(initialConversation.audience || ['gen_z']);
       setConversationId(initialConversation.id);
+      // Don't override reference if it's already set from conversation
+      if (initialConversation.messages[0]?.content) {
+        setReference(initialConversation.messages[0].content);
+      }
     } else if (initialAgent) {
       setPlatform(initialAgent.platform);
       setNiche(initialAgent.niche);
@@ -67,8 +72,14 @@ export default function Chat({ initialAgent, initialConversation }: ChatProps) {
       if (initialAgent.reference) setReference(initialAgent.reference);
       // Create new conversation ID
       setConversationId(`conv_${Date.now()}`);
+    } else if (initialIdea) {
+      // When an idea is provided, set it as reference
+      setReference(initialIdea);
+      setConversationId(`conv_${Date.now()}`);
+      // Clear messages to start fresh with the idea
+      setMessages([]);
     }
-  }, [initialAgent, initialConversation]);
+  }, [initialAgent, initialConversation, initialIdea]);
 
   // Save conversation automatically when messages change
   useEffect(() => {
@@ -258,16 +269,25 @@ export default function Chat({ initialAgent, initialConversation }: ChatProps) {
     
     // Update messages state and get the updated array
     let updatedMessages: Message[];
+    let assistantMsgIndex: number;
+    
     setMessages(prev => {
       updatedMessages = [...prev, userMsg, {
         role: 'assistant',
         content: '',
         timestamp: Date.now()
       }];
+      assistantMsgIndex = updatedMessages.length - 1;
       return updatedMessages;
     });
 
-    const assistantMsgIndex = updatedMessages!.length - 1;
+    // Use current messages as fallback if updatedMessages isn't set yet
+    const messagesForRequest = updatedMessages || [...messages, userMsg];
+    const conversationHistory = messagesForRequest.slice(0, -1).map(m => ({
+      role: m.role,
+      content: m.content,
+      type: m.type
+    }));
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -283,13 +303,9 @@ export default function Chat({ initialAgent, initialConversation }: ChatProps) {
           personality,
           audience,
           reference_text: reference,
-          conversation_history: updatedMessages!.slice(0, -1).map(m => ({
-            role: m.role,
-            content: m.content,
-            type: m.type
-          })),
+          conversation_history: conversationHistory,
           user_message: userMessage,
-          context_content: updatedMessages!.find(m => m.type)?.content || ''
+          context_content: messagesForRequest.find(m => m.type)?.content || ''
         })
       });
 
@@ -317,16 +333,46 @@ export default function Chat({ initialAgent, initialConversation }: ChatProps) {
                   fullContent += data.chunk;
                   setMessages(prev => {
                     const updated = [...prev];
-                    if (updated[assistantMsgIndex]) {
-                      updated[assistantMsgIndex] = {
-                        ...updated[assistantMsgIndex],
-                        content: fullContent
+                    const msgIndex = assistantMsgIndex !== undefined ? assistantMsgIndex : updated.length - 1;
+                    if (updated[msgIndex] && updated[msgIndex].role === 'assistant') {
+                      // Update existing assistant message
+                      updated[msgIndex] = {
+                        ...updated[msgIndex],
+                        content: fullContent,
+                        timestamp: updated[msgIndex].timestamp || Date.now()
                       };
+                    } else if (fullContent) {
+                      // If assistant message doesn't exist, add it
+                      updated.push({
+                        role: 'assistant',
+                        content: fullContent,
+                        timestamp: Date.now()
+                      });
                     }
                     return updated;
                   });
                 }
                 if (data.done) {
+                  // Ensure the final message is saved when streaming completes
+                  setMessages(prev => {
+                    const updated = [...prev];
+                    const msgIndex = assistantMsgIndex !== undefined ? assistantMsgIndex : updated.length - 1;
+                    if (updated[msgIndex] && updated[msgIndex].role === 'assistant') {
+                      updated[msgIndex] = {
+                        ...updated[msgIndex],
+                        content: fullContent,
+                        timestamp: updated[msgIndex].timestamp || Date.now()
+                      };
+                    } else if (fullContent) {
+                      // If assistant message doesn't exist, add it
+                      updated.push({
+                        role: 'assistant',
+                        content: fullContent,
+                        timestamp: Date.now()
+                      });
+                    }
+                    return updated;
+                  });
                   setIsChatting(false);
                 }
                 if (data.error) {
@@ -334,18 +380,33 @@ export default function Chat({ initialAgent, initialConversation }: ChatProps) {
                 }
               } catch (e) {
                 // Skip invalid JSON
+                console.error('Error parsing chat response:', e);
               }
             }
           }
         }
+      } else {
+        throw new Error('No response body received');
       }
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      alert(`Error: ${errorMessage}`);
-      // Remove the last two messages (user message and placeholder)
-      setMessages(prev => prev.slice(0, -2));
+      alert(`Error continuing chat: ${errorMessage}\n\nMake sure the backend is running at http://localhost:8000`);
       setIsChatting(false);
+      // Remove the user message and placeholder assistant message if chat failed
+      setMessages(prev => {
+        // Find the last user message and assistant placeholder
+        const lastIndex = prev.length - 1;
+        const secondLastIndex = prev.length - 2;
+        if (prev[lastIndex]?.role === 'assistant' && prev[secondLastIndex]?.role === 'user') {
+          return prev.slice(0, -2);
+        }
+        // If only one message (user), remove it
+        if (prev[lastIndex]?.role === 'user') {
+          return prev.slice(0, -1);
+        }
+        return prev;
+      });
     }
   };
 
@@ -412,7 +473,14 @@ export default function Chat({ initialAgent, initialConversation }: ChatProps) {
 
               {/* Generate Buttons */}
               <div className="pt-4 space-y-3">
-                {!reference && (
+                {initialIdea && reference && (
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-2">
+                    <p className="text-xs text-green-800 dark:text-green-200 font-medium">
+                      <strong>Idea loaded!</strong> Your idea from Idea Notes has been added. You can now generate content based on it.
+                    </p>
+                  </div>
+                )}
+                {!reference && !initialIdea && (
                   <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-2">
                     <p className="text-xs text-amber-800 dark:text-amber-200 font-medium">
                       <strong>Tip:</strong> Add a detailed reference above for better, more personalized results!
