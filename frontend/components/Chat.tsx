@@ -212,8 +212,21 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
   }, [messages, currentGeneration]);
 
   const generateContent = async (contentType: 'hooks' | 'script' | 'shotlist' | 'music' | 'titles' | 'description' | 'tags' | 'thumbnails' | 'beatmap' | 'cta' | 'tools') => {
-    if (!platform || !niche || !personality || !audience || audience.length === 0) {
-      alert('Please fill in all required fields: platform, niche, personality, and at least one audience!');
+    // Enforce niche selection first
+    if (!niche || niche.trim() === '') {
+      alert('Please select a niche before generating content. The niche helps us create more targeted and relevant content for your audience.');
+      // Focus on niche input if it exists
+      const nicheInput = document.querySelector('input[placeholder*="niche"], input[placeholder*="Niche"]') as HTMLInputElement;
+      if (nicheInput) {
+        nicheInput.focus();
+        nicheInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+    
+    // Then check other required fields
+    if (!platform || !personality || !audience || audience.length === 0) {
+      alert('Please fill in all required fields: platform, personality, and at least one audience!');
       return;
     }
 
@@ -619,9 +632,10 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
               <input
                 suppressHydrationWarning
                 className="w-full p-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
-                placeholder="Enter your niche (e.g., travel, food, tech, beauty)"
+                placeholder="Enter your niche (e.g., travel, food, tech, beauty) *Required"
                 value={niche}
                 onChange={(e) => setNiche(e.target.value)}
+                className={!niche ? 'border-amber-500 focus:ring-amber-500' : ''}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' && platform && niche && personality && audience) {
                     generateContent('hooks');
