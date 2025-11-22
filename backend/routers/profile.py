@@ -212,3 +212,93 @@ async def get_defaults(user_id: str, db: Session = Depends(get_db)):
         }
     }
 
+# LLM backend reference (set from main.py)
+_llm_backend = None
+
+def set_llm_backend(llm):
+    """Set LLM backend for voice analysis"""
+    global _llm_backend
+    _llm_backend = llm
+
+class AnalyzeVoiceRequest(BaseModel):
+    user_id: str
+    sample_texts: List[str]
+
+@router.post("/analyze-voice")
+async def analyze_voice_from_samples(
+    request: AnalyzeVoiceRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Analyze user's writing samples to determine their voice/style
+    
+    This endpoint uses the global LLM instance to analyze content
+    """
+    
+    if not _llm_backend:
+        # Try to get from main module
+        try:
+            from main import llm_backend as main_llm
+            if main_llm:
+                global _llm_backend
+                _llm_backend = main_llm
+            else:
+                raise HTTPException(status_code=503, detail="LLM not available")
+        except ImportError:
+            raise HTTPException(status_code=503, detail="LLM not available")
+    
+    # Combine samples
+    combined_samples = "\n\n---\n\n".join(request.sample_texts)
+    
+    prompt = f"""Analyze these writing samples and describe the creator's voice:
+
+SAMPLES:
+{combined_samples}
+
+Output as JSON with these fields:
+{{
+  "tone": "casual" | "professional" | "friendly" | "humorous" | "authoritative",
+  "energy": "high" | "medium" | "calm",
+  "formality": "very_casual" | "casual" | "balanced" | "formal",
+  "uses_humor": true | false,
+  "uses_storytelling": true | false,
+  "sentence_style": "short_punchy" | "varied" | "long_detailed",
+  "personality_traits": ["trait1", "trait2", "trait3"],
+  "speaking_style": "direct" | "conversational" | "educational" | "entertaining"
+}}
+
+Only output valid JSON, nothing else."""
+
+    try:
+        response = _llm_backend.generate([
+            {"role": "user", "content": prompt}
+        ])
+        
+        # Parse JSON
+        response_clean = response.strip()
+        if "```json" in response_clean:
+            response_clean = response_clean.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_clean:
+            response_clean = response_clean.split("```")[1].split("```")[0].strip()
+        
+        voice_analysis = json.loads(response_clean)
+        
+        # Update profile
+        profile = db.query(UserProfile).filter(UserProfile.user_id == request.user_id).first()
+        if profile:
+            profile.brand_voice = voice_analysis
+            profile.personality_traits = voice_analysis.get('personality_traits', [])
+            db.commit()
+            db.refresh(profile)
+        
+        logger.info(f"Voice analyzed for user {request.user_id}")
+        
+        return {
+            "voice_analysis": voice_analysis,
+            "message": "Voice profile updated successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Voice analysis failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
