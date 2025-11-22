@@ -80,13 +80,13 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
   });
 
   const teams = [
-    { id: 'all', label: 'All Teams', emoji: '🎯' },
-    { id: 'Strategy', label: 'Strategy', emoji: '👔' },
-    { id: 'Content', label: 'Content', emoji: '✍️' },
-    { id: 'Creative', label: 'Creative', emoji: '🎨' },
-    { id: 'Analytics', label: 'Analytics', emoji: '📊' },
-    { id: 'Distribution', label: 'Distribution', emoji: '📱' },
-    { id: 'Leadership', label: 'Leadership', emoji: '🎯' },
+    { id: 'all', label: 'All Teams' },
+    { id: 'Strategy', label: 'Strategy' },
+    { id: 'Content', label: 'Content' },
+    { id: 'Creative', label: 'Creative' },
+    { id: 'Analytics', label: 'Analytics' },
+    { id: 'Distribution', label: 'Distribution' },
+    { id: 'Leadership', label: 'Leadership' },
   ];
 
   useEffect(() => {
@@ -312,7 +312,6 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    <span className="mr-2">{team.emoji}</span>
                     {team.label}
                   </button>
                 ))}
