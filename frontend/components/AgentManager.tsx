@@ -14,7 +14,6 @@ interface Agent {
   created_at?: string;
   agent_type?: string;
   team?: string;
-  emoji?: string;
   template_id?: string;
 }
 
@@ -431,7 +430,6 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                       className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition bg-white"
                     >
                       <div className="flex items-start gap-3 mb-3">
-                        <div className="text-2xl">{agent.emoji || '🤖'}</div>
                         <div className="flex-1">
                           <div className="flex justify-between items-start mb-1">
                             <div className="flex-1">
