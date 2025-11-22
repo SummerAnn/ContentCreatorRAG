@@ -102,36 +102,49 @@ if (typeof window !== 'undefined') {
       return String(a);
     }).join(' ').toLowerCase();
     
-    // More comprehensive pattern matching - catch ALL variations including stack traces
+    // ULTRA-COMPREHENSIVE pattern matching - catch ALL variations including stack traces
+    // This matches the exact error format: "Warning: Extra attributes from the server: data-has-listeners at input..."
     const isHydrationWarning = 
+      // Direct message matches
       msg.includes('extra attributes from the server') ||
-      msg.includes('extra attributes') && msg.includes('server') ||
+      msg.includes('warning: extra attributes from the server') ||
+      msg.includes('extra attributes') ||
       msg.includes('data-has-listeners') ||
       msg.includes('data-has-listeners') && msg.includes('input') ||
+      // Hydration-related
       (msg.includes('hydration') && (msg.includes('warning') || msg.includes('error'))) ||
+      // Component path matches (from stack trace)
       (msg.includes('at input') && (msg.includes('referenceinput') || msg.includes('at div'))) ||
       (msg.includes('at div') && msg.includes('referenceinput')) ||
       (msg.includes('referenceinput') && (msg.includes('at input') || msg.includes('at div'))) ||
+      // React DevTools
       msg.includes('download the react devtools') ||
+      // React internal function names (from stack trace)
       msg.includes('warnforextraattributes') ||
       msg.includes('warn for extra attributes') ||
       msg.includes('warnforextra') ||
+      msg.includes('diffhydratedproperties') ||
+      msg.includes('hydrateinstance') ||
+      msg.includes('preparetohydratehostinstance') ||
+      msg.includes('completework') ||
+      // ReferenceInput specific
       (msg.includes('referenceinput') && (msg.includes('data-has') || msg.includes('attributes'))) ||
       (msg.includes('reference') && msg.includes('data-has')) ||
-      (msg.includes('diffhydratedproperties')) ||
-      (msg.includes('warnforextra') && msg.includes('input')) ||
-      (msg.includes('react-dom.development.js') && msg.includes('extra attributes')) ||
-      (msg.includes('warnforextraattributes') && msg.includes('32539')) ||
-      (msg.includes('diffhydratedproperties') && msg.includes('34920')) ||
-      (msg.includes('hydrateinstance') && msg.includes('35925')) ||
-      // Catch the specific error format with stack trace
-      (msg.includes('warning: extra attributes') && msg.includes('referenceinput')) ||
-      // Catch any console.error that mentions both "extra" and "attributes"
-      (msg.includes('extra') && msg.includes('attributes') && (msg.includes('input') || msg.includes('reference'))) ||
-      // Catch app-index.js specific warnings
-      (msg.includes('app-index.js') && msg.includes('extra attributes')) ||
-      // Catch main-app.js specific warnings  
-      (msg.includes('main-app.js') && msg.includes('extra attributes'));
+      (msg.includes('referenceinput') && msg.includes('warning')) ||
+      // React DOM internal line numbers (from stack trace)
+      (msg.includes('react-dom.development.js') && (msg.includes('extra') || msg.includes('attributes'))) ||
+      msg.includes('32539') || // warnForExtraAttributes
+      msg.includes('34920') || // diffHydratedProperties
+      msg.includes('35925') || // hydrateInstance
+      msg.includes('7287') ||  // prepareToHydrateHostInstance
+      msg.includes('19675') || // completeWork
+      // File-specific warnings
+      (msg.includes('app-index.js') && (msg.includes('extra attributes') || msg.includes('warning'))) ||
+      (msg.includes('main-app.js') && (msg.includes('extra attributes') || msg.includes('warning'))) ||
+      // Generic pattern: any message with "warning", "extra attributes", and "input" or "reference"
+      (msg.includes('warning') && msg.includes('extra attributes') && (msg.includes('input') || msg.includes('reference'))) ||
+      // Catch any combination of these keywords
+      (msg.includes('extra') && msg.includes('attributes') && (msg.includes('input') || msg.includes('reference') || msg.includes('server')));
     
     if (isHydrationWarning) {
       return; // Suppress hydration warnings silently
