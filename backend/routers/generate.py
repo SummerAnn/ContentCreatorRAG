@@ -58,29 +58,47 @@ async def generate_hooks(req: GenerateRequest):
                 
                 yield f"data: {json.dumps({'status': 'retrieving', 'message': 'Finding relevant examples...'})}\n\n"
                 
-                # RAG retrieval - limit to 5 for speed
+                # RAG retrieval - limit to 3 for speed, timeout quickly
+                rag_results = []
                 try:
-                    rag_results = rag.retrieve_context(
-                        user_id=req.user_id,
-                        query=query_text,
-                        platform=req.platform,
-                        top_k=5  # Reduced from 10 for speed
+                    import asyncio
+                    rag_results = await asyncio.wait_for(
+                        asyncio.to_thread(
+                            rag.retrieve_context,
+                            user_id=req.user_id,
+                            query=query_text,
+                            platform=req.platform,
+                            top_k=3  # Reduced for speed
+                        ),
+                        timeout=3.0  # 3 second max for RAG
                     )
+                except asyncio.TimeoutError:
+                    logger.warning("RAG retrieval timed out, continuing without RAG")
+                    rag_results = []
                 except Exception as e:
                     logger.warning(f"RAG retrieval failed: {e}, continuing without RAG")
                     rag_results = []
                 
                 yield f"data: {json.dumps({'status': 'trends', 'message': 'Checking trends...'})}\n\n"
                 
-                # Get trending topics (non-blocking, use cache)
+                # Get trending topics (skip if taking too long - use cache only or skip entirely)
                 trends_text = ""
                 try:
-                    trends = trend_service.get_trends(
-                        platform=req.platform,
-                        niche=req.niche,
-                        use_cache=True
+                    # Try to get trends, but timeout quickly if Reddit is slow
+                    import asyncio
+                    trends = await asyncio.wait_for(
+                        asyncio.to_thread(
+                            trend_service.get_trends,
+                            platform=req.platform,
+                            niche=req.niche,
+                            use_cache=True
+                        ),
+                        timeout=2.0  # 2 second max for trends
                     )
-                    trends_text = trend_service.format_trends_for_prompt(trends, max_count=3)  # Reduced for speed
+                    trends_text = trend_service.format_trends_for_prompt(trends, max_count=3)
+                except asyncio.TimeoutError:
+                    logger.warning("Trend fetching timed out, continuing without trends")
+                    trends_text = ""
                 except Exception as e:
                     logger.warning(f"Trend fetching failed: {e}, continuing without trends")
                     trends_text = ""
@@ -168,10 +186,6 @@ async def generate_script(req: GenerateRequest):
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
         
         return StreamingResponse(stream_response(), media_type="text/event-stream")
-    
-    except Exception as e:
-        logger.error(f"Error generating script: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
     
     except Exception as e:
         logger.error(f"Error generating script: {e}")
