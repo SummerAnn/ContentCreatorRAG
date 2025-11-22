@@ -324,14 +324,37 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
           }
         }
       }
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeoutId);
       console.error('Generation error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      alert(`Error generating content: ${errorMessage}\n\nMake sure the backend is running at http://localhost:8000`);
+      
+      // Remove user message if generation failed
+      setMessages(prev => prev.filter(m => m !== userMessage));
       setCurrentGeneration(null);
       setIsGenerating(false);
-      // Remove the user message if generation failed
-      setMessages(prev => prev.slice(0, -1));
+      
+      let errorMsg = `Error generating ${contentType}. `;
+      if (error.name === 'AbortError') {
+        errorMsg += 'Request timed out after 2 minutes. The backend may be slow or unresponsive. Please try again.';
+      } else if (error.message?.includes('timeout') || error.message?.includes('Stream timeout')) {
+        errorMsg += 'The request took too long. Please try again or check your backend connection.';
+      } else if (error.message?.includes('Failed to fetch')) {
+        errorMsg += 'Cannot connect to backend. Make sure the backend is running on http://localhost:8000';
+      } else {
+        errorMsg += error instanceof Error ? error.message : 'Unknown error occurred';
+      }
+      
+      const errorMessage: Message = {
+        role: 'assistant',
+        content: errorMsg,
+        timestamp: Date.now()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      
+      // Show alert for critical errors
+      if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+        alert(errorMsg);
+      }
     }
   };
 
