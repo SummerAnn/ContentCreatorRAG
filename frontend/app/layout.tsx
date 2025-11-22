@@ -102,14 +102,16 @@ if (typeof window !== 'undefined') {
       return String(a);
     }).join(' ').toLowerCase();
     
-    // More comprehensive pattern matching - catch ALL variations
+    // More comprehensive pattern matching - catch ALL variations including stack traces
     const isHydrationWarning = 
       msg.includes('extra attributes from the server') ||
       msg.includes('extra attributes') && msg.includes('server') ||
       msg.includes('data-has-listeners') ||
+      msg.includes('data-has-listeners') && msg.includes('input') ||
       (msg.includes('hydration') && (msg.includes('warning') || msg.includes('error'))) ||
-      (msg.includes('at input') && msg.includes('referenceinput')) ||
+      (msg.includes('at input') && (msg.includes('referenceinput') || msg.includes('at div'))) ||
       (msg.includes('at div') && msg.includes('referenceinput')) ||
+      (msg.includes('referenceinput') && (msg.includes('at input') || msg.includes('at div'))) ||
       msg.includes('download the react devtools') ||
       msg.includes('warnforextraattributes') ||
       msg.includes('warn for extra attributes') ||
@@ -118,7 +120,14 @@ if (typeof window !== 'undefined') {
       (msg.includes('reference') && msg.includes('data-has')) ||
       (msg.includes('diffhydratedproperties')) ||
       (msg.includes('warnforextra') && msg.includes('input')) ||
-      msg.includes('react-dom.development.js') && msg.includes('extra attributes');
+      (msg.includes('react-dom.development.js') && msg.includes('extra attributes')) ||
+      (msg.includes('warnforextraattributes') && msg.includes('32539')) ||
+      (msg.includes('diffhydratedproperties') && msg.includes('34920')) ||
+      (msg.includes('hydrateinstance') && msg.includes('35925')) ||
+      // Catch the specific error format with stack trace
+      (msg.includes('warning: extra attributes') && msg.includes('referenceinput')) ||
+      // Catch any console.error that mentions both "extra" and "attributes"
+      (msg.includes('extra') && msg.includes('attributes') && (msg.includes('input') || msg.includes('reference')));
     
     if (isHydrationWarning) {
       return; // Suppress hydration warnings silently
@@ -126,7 +135,7 @@ if (typeof window !== 'undefined') {
     originalError.apply(console, args);
   };
   
-  // Also intercept window.onerror for React hydration errors
+  // Also intercept window.onerror and unhandledrejection for React hydration errors
   const originalWindowError = window.onerror;
   window.onerror = function(message, source, lineno, colno, error) {
     const msg = String(message || '').toLowerCase();
@@ -141,6 +150,14 @@ if (typeof window !== 'undefined') {
       return originalWindowError.call(window, message, source, lineno, colno, error);
     }
     return false;
+  };
+  
+  window.onunhandledrejection = function(event: PromiseRejectionEvent) {
+    const msg = String(event.reason || '').toLowerCase();
+    if (msg.includes('extra attributes') || msg.includes('data-has-listeners')) {
+      event.preventDefault();
+      return;
+    }
   };
   
   const originalWarn = console.warn.bind(console);

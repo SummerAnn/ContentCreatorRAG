@@ -19,21 +19,30 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
-  // Remove data-has-listeners attribute immediately and continuously
+  // Remove data-has-listeners attribute immediately and continuously - run BEFORE React renders
   useEffect(() => {
+    // Function to aggressively remove all extension attributes
     const removeExtensionAttributes = () => {
-      // Remove from this specific input
+      // Remove from this specific input immediately
       if (inputRef.current) {
         inputRef.current.removeAttribute('data-has-listeners');
-        // Also remove any other extension attributes
+        // Remove all data-* attributes that might be added by extensions
+        const attrsToRemove: string[] = [];
         Array.from(inputRef.current.attributes).forEach(attr => {
-          if (attr.name.startsWith('data-') && (attr.name.includes('listener') || attr.name.includes('extension'))) {
-            inputRef.current?.removeAttribute(attr.name);
+          if (attr.name.startsWith('data-') && (
+            attr.name.includes('listener') || 
+            attr.name.includes('extension') ||
+            attr.name.includes('lt-installed') ||
+            attr.name.includes('grammarly') ||
+            attr.name.includes('lastpass')
+          )) {
+            attrsToRemove.push(attr.name);
           }
         });
+        attrsToRemove.forEach(name => inputRef.current?.removeAttribute(name));
       }
       // Also check link input
-      const linkInput = document.querySelector('input[type="url"]');
+      const linkInput = document.querySelector('input[type="url"]') as HTMLInputElement;
       if (linkInput) {
         linkInput.removeAttribute('data-has-listeners');
         Array.from(linkInput.attributes).forEach(attr => {
@@ -44,24 +53,34 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
       }
     };
     
-    // Run immediately and multiple times to catch attributes added at different times
+    // Run immediately BEFORE anything else
+    requestAnimationFrame(() => {
+      removeExtensionAttributes();
+      // Run again in next frame
+      requestAnimationFrame(removeExtensionAttributes);
+    });
+    
+    // Run multiple times to catch attributes added at different times
     removeExtensionAttributes();
     const intervals: NodeJS.Timeout[] = [];
-    [10, 50, 100, 200, 500, 1000, 2000, 3000].forEach(delay => {
+    [5, 10, 25, 50, 100, 200, 500, 1000, 2000].forEach(delay => {
       intervals.push(setTimeout(removeExtensionAttributes, delay));
     });
     
-    // Use MutationObserver to catch attributes added dynamically - observe both attribute changes and subtree
+    // Use MutationObserver to catch attributes added dynamically
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName?.includes('listener')) {
+        if (mutation.type === 'attributes') {
           const target = mutation.target as HTMLElement;
-          target.removeAttribute('data-has-listeners');
-          Array.from(target.attributes).forEach(attr => {
-            if (attr.name.startsWith('data-') && (attr.name.includes('listener') || attr.name.includes('extension'))) {
-              target.removeAttribute(attr.name);
-            }
-          });
+          // Remove immediately if it's a listener-related attribute
+          if (target.hasAttribute('data-has-listeners') || mutation.attributeName?.includes('listener')) {
+            target.removeAttribute('data-has-listeners');
+            Array.from(target.attributes).forEach(attr => {
+              if (attr.name.includes('listener') || attr.name.includes('extension')) {
+                target.removeAttribute(attr.name);
+              }
+            });
+          }
         }
         // Also check added nodes
         mutation.addedNodes.forEach(node => {
@@ -70,7 +89,7 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
             if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
               el.removeAttribute('data-has-listeners');
             }
-            // Check children
+            // Check children recursively
             el.querySelectorAll?.('input, textarea').forEach((input: Element) => {
               input.removeAttribute('data-has-listeners');
             });
@@ -79,14 +98,14 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
       });
     });
     
-    // Observe the input and its parent for attribute changes
+    // Observe the input and document body for maximum coverage
     if (inputRef.current) {
       observer.observe(inputRef.current, {
         attributes: true,
-        attributeFilter: ['data-has-listeners'],
+        attributeFilter: ['data-has-listeners', 'data-lt-installed'],
         attributeOldValue: false
       });
-      // Also observe parent container
+      // Also observe parent container and document body
       if (inputRef.current.parentElement) {
         observer.observe(inputRef.current.parentElement, {
           attributes: false,
@@ -96,8 +115,15 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
       }
     }
     
-    // Aggressive interval to check periodically
-    const intervalId = setInterval(removeExtensionAttributes, 500);
+    // Observe document body for any input changes
+    observer.observe(document.body, {
+      attributes: false,
+      childList: true,
+      subtree: true
+    });
+    
+    // Very aggressive interval to check periodically (every 100ms)
+    const intervalId = setInterval(removeExtensionAttributes, 100);
     
     return () => {
       intervals.forEach(id => clearTimeout(id));
