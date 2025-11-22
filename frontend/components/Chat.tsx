@@ -821,8 +821,21 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
                 type="text"
                 suppressHydrationWarning
                 value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
+                onChange={(e) => {
+                  setChatInput(e.target.value);
+                  // Remove extension attributes
+                  if (e.target.hasAttribute('data-has-listeners')) {
+                    e.target.removeAttribute('data-has-listeners');
+                  }
+                }}
                 placeholder="Ask questions, request revisions, or get more ideas..."
+                suppressHydrationWarning
+                data-hydration-suppress
+                onFocus={(e) => {
+                  if (e.target.hasAttribute('data-has-listeners')) {
+                    e.target.removeAttribute('data-has-listeners');
+                  }
+                }}
                 className="flex-1 p-3 luxury-border rounded-lg bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
                 disabled={isChatting || isGenerating}
               />
