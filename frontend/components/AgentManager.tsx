@@ -22,7 +22,6 @@ interface Template {
   name: string;
   description: string;
   agent_type: string;
-  emoji: string;
   team: string;
   specialized_platforms: string[];
   capabilities: string[];
@@ -327,7 +326,6 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                       className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition bg-white"
                     >
                       <div className="flex items-start gap-3 mb-3">
-                        <div className="text-3xl">{template.emoji}</div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-bold text-lg">{template.name}</h3>

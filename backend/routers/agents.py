@@ -47,7 +47,7 @@ class CreateAgentRequest(BaseModel):
 
 AGENT_TEMPLATES = {
     # ==========================================
-    # 👔 STRATEGY TEAM
+    # STRATEGY TEAM
     # ==========================================
     "chief_strategy_officer": {
         "name": "Chief Strategy Officer",
@@ -87,7 +87,6 @@ Output a comprehensive strategy document with actionable steps.""",
         "name": "Brand Strategist",
         "description": "Defines your unique brand voice, positioning, and messaging framework to stand out in your niche",
         "agent_type": "strategy",
-        "🎯",
         "team": "Strategy",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the Brand Strategist - architect of brand identity and positioning.
@@ -122,7 +121,6 @@ Output a complete brand strategy document.""",
         "name": "Audience Research Analyst",
         "description": "Deep-dives into your audience psychology, pain points, desires, and content consumption patterns",
         "agent_type": "strategy",
-        "🔍",
         "team": "Strategy",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the Audience Research Analyst - expert in understanding audience psychology.
@@ -154,13 +152,12 @@ Output comprehensive audience insights with actionable recommendations.""",
         "max_tokens": 1800
     },
     # ==========================================
-    # ✍️ CONTENT TEAM
+    # CONTENT TEAM
     # ==========================================
     "creative_director": {
         "name": "Creative Director",
         "description": "Generates innovative content concepts, themes, and series ideas that align with your brand strategy",
         "agent_type": "content",
-        "🎨",
         "team": "Content",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the Creative Director - the visionary behind compelling content concepts.
@@ -195,7 +192,6 @@ Output a creative brief with 30 days of content ideas organized by themes.""",
         "name": "Senior Copywriter",
         "description": "Crafts compelling captions, descriptions, and CTAs that drive engagement and conversions",
         "agent_type": "content",
-        "✍️",
         "team": "Content",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the Senior Copywriter - master of persuasive, engaging copy.
@@ -230,7 +226,6 @@ Output 5 caption variations with different CTA strategies.""",
         "name": "Video Script Writer",
         "description": "Writes retention-optimized scripts for short and long-form video content with perfect pacing",
         "agent_type": "content",
-        "🎬",
         "team": "Content",
         "specialized_platforms": ["tiktok", "youtube_short", "instagram_reel", "youtube_long"],
         "system_prompt": """You are the Video Script Writer - specialist in retention-optimized video scripts.
@@ -272,7 +267,6 @@ Output a production-ready script with all visual and audio cues.""",
         "name": "Content Editor",
         "description": "Reviews, refines, and polishes all content for clarity, impact, and brand consistency",
         "agent_type": "content",
-        "📝",
         "team": "Content",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the Content Editor - guardian of quality and brand consistency.
@@ -306,13 +300,12 @@ Output edited version with detailed feedback and improvement suggestions.""",
         "max_tokens": 1500
     },
     # ==========================================
-    # 🎨 CREATIVE TEAM
+    # CREATIVE TEAM
     # ==========================================
     "hook_creator": {
         "name": "Hook Specialist",
         "description": "Creates viral hooks using psychology, pattern interrupts, and curiosity gaps",
         "agent_type": "creative",
-        "🎣",
         "team": "Creative",
         "specialized_platforms": ["tiktok", "youtube_short", "instagram_reel"],
         "system_prompt": """You are the Hook Specialist - master of stopping the scroll.
@@ -352,7 +345,6 @@ Output 15 hook variations using different psychological triggers.""",
         "name": "Thumbnail Designer",
         "description": "Designs click-worthy thumbnail concepts with text, imagery, and psychological triggers",
         "agent_type": "creative",
-        "🖼️",
         "team": "Creative",
         "specialized_platforms": ["youtube_short", "youtube_long"],
         "system_prompt": """You are the Thumbnail Designer - expert in visual click-through optimization.
@@ -393,13 +385,12 @@ Output detailed thumbnail concepts ready for design.""",
         "max_tokens": 1200
     },
     # ==========================================
-    # 📊 ANALYTICS TEAM
+    # ANALYTICS TEAM
     # ==========================================
     "performance_analyst": {
         "name": "Performance Analyst",
         "description": "Analyzes content performance, identifies patterns, and provides data-driven recommendations",
         "agent_type": "analytics",
-        "📊",
         "team": "Analytics",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the Performance Analyst - data-driven content optimization expert.
@@ -442,7 +433,6 @@ Output comprehensive performance report with specific action items.""",
         "name": "Growth Hacker",
         "description": "Finds unconventional growth tactics, viral opportunities, and algorithm hacks for rapid scaling",
         "agent_type": "analytics",
-        "🚀",
         "team": "Analytics",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the Growth Hacker - specialist in rapid, unconventional growth strategies.
@@ -487,7 +477,6 @@ Think unconventionally. Focus on explosive growth, not linear growth.""",
         "name": "A/B Testing Specialist",
         "description": "Designs experiments to test thumbnails, hooks, formats, and strategies for optimization",
         "agent_type": "analytics",
-        "🧪",
         "team": "Analytics",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the A/B Testing Specialist - expert in scientific content optimization.
@@ -531,13 +520,12 @@ Output a complete A/B test plan ready for execution.""",
         "max_tokens": 1500
     },
     # ==========================================
-    # 📱 DISTRIBUTION TEAM
+    # DISTRIBUTION TEAM
     # ==========================================
     "platform_optimizer": {
         "name": "Platform Optimizer",
         "description": "Optimizes content for each platform's algorithm, format, and best practices",
         "agent_type": "distribution",
-        "📱",
         "team": "Distribution",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the Platform Optimizer - expert in platform-specific optimization.
@@ -588,7 +576,6 @@ Output platform-specific optimization guide.""",
         "name": "SEO & Hashtag Specialist",
         "description": "Strategic hashtag research and SEO optimization for maximum discoverability",
         "agent_type": "distribution",
-        "#️⃣",
         "team": "Distribution",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the SEO & Hashtag Specialist - expert in content discoverability.
@@ -635,7 +622,6 @@ Output comprehensive hashtag strategy with SEO optimization.""",
         "name": "Community Manager",
         "description": "Manages audience engagement, responds to comments, and builds loyal community",
         "agent_type": "distribution",
-        "💬",
         "team": "Distribution",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the Community Manager - expert in building engaged, loyal audiences.
@@ -677,13 +663,12 @@ Output community engagement playbook.""",
         "max_tokens": 1500
     },
     # ==========================================
-    # 🎯 ORCHESTRATION
+    # ORCHESTRATION
     # ==========================================
     "campaign_manager": {
         "name": "Campaign Manager",
         "description": "Orchestrates all teams to execute comprehensive marketing campaigns from strategy to posting",
         "agent_type": "orchestration",
-        "🎯",
         "team": "Leadership",
         "specialized_platforms": ["all"],
         "system_prompt": """You are the Campaign Manager - the orchestrator who brings all teams together.
@@ -801,7 +786,6 @@ async def create_from_template(
         "description": template["description"],
         "agent_type": template["agent_type"],
         "team": template["team"],
-template.get("emoji", "🤖"),
         "system_prompt": template["system_prompt"],
         "capabilities": template["capabilities"],
         "temperature": template.get("temperature", 0.8),
