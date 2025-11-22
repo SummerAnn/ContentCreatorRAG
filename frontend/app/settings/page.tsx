@@ -64,7 +64,20 @@ export default function SettingsPage() {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/api/profile/${userId}`);
+      
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      
+      const response = await fetch(`${apiUrl}/api/profile/${userId}`, {
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (response.ok) {
         const data = await response.json();
         setProfile({
@@ -78,9 +91,37 @@ export default function SettingsPage() {
           target_audience: data.target_audience || {},
           brand_voice: data.brand_voice || {}
         });
+      } else {
+        // If profile doesn't exist, create default one
+        setProfile({
+          user_id: userId,
+          primary_platforms: [],
+          secondary_platforms: [],
+          primary_niches: [],
+          personality_traits: [],
+          primary_goals: [],
+          avoid_topics: [],
+          target_audience: {},
+          brand_voice: {},
+          profile_completed: false
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load profile:', error);
+      // Create default profile even on error so user can still use settings
+      const userId = localStorage.getItem('user_id') || 'default_user';
+      setProfile({
+        user_id: userId,
+        primary_platforms: [],
+        secondary_platforms: [],
+        primary_niches: [],
+        personality_traits: [],
+        primary_goals: [],
+        avoid_topics: [],
+        target_audience: {},
+        brand_voice: {},
+        profile_completed: false
+      });
     } finally {
       setIsLoading(false);
     }
@@ -94,21 +135,36 @@ export default function SettingsPage() {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      
+      // Add timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(`${apiUrl}/api/profile/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...profile,
           profile_completed: true
-        })
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        alert('Failed to save profile. Please try again.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save profile:', error);
+      if (error.name === 'AbortError') {
+        alert('Request timed out. Please check your connection and try again.');
+      } else {
+        alert('Failed to save profile. Please try again.');
+      }
     } finally {
       setIsSaving(false);
     }
@@ -175,27 +231,35 @@ export default function SettingsPage() {
     }
   };
 
+  // Show loading for max 2 seconds, then show UI with default profile
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[var(--background)]">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-[var(--accent)] mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">Loading settings...</p>
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">If this takes too long, the page will load with defaults</p>
         </div>
       </div>
     );
   }
 
+  // If no profile after loading, create default one
   if (!profile) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[var(--background)]">
-        <div className="text-center bg-white dark:bg-[#1a1a1a] rounded-lg shadow-xl p-8 max-w-md">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-200">No Profile Found</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">Your profile will be created automatically when you save settings.</p>
-        </div>
-      </div>
-    );
+    const userId = localStorage.getItem('user_id') || 'default_user';
+    setProfile({
+      user_id: userId,
+      primary_platforms: [],
+      secondary_platforms: [],
+      primary_niches: [],
+      personality_traits: [],
+      primary_goals: [],
+      avoid_topics: [],
+      target_audience: {},
+      brand_voice: {},
+      profile_completed: false
+    });
+    return null; // Will re-render with profile
   }
 
   const platforms = [
