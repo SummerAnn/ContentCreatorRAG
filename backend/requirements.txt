@@ -22,3 +22,10 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 python-dotenv==1.0.0
 
+# Content Quality & Insights
+pytrends==4.9.2              # Google Trends (free)
+language-tool-python==2.8.0  # Grammar checking (free, offline)
+better-profanity==0.7.0      # Profanity detection
+textstat==0.7.3              # Readability scoring
+praw==7.7.1                  # Reddit API (for trends)
+

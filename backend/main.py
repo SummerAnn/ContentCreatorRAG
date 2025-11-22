@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 from contextlib import asynccontextmanager
 import logging
 
-from routers import generate, upload, agents, chat, trends, templates, swipefile, calendar, ab_testing, viral_score, thumbnail_ab, engagement_predictor, multi_platform, competitor_analysis
+from routers import generate, upload, agents, chat, trends, templates, swipefile, calendar, ab_testing, viral_score, thumbnail_ab, engagement_predictor, multi_platform, competitor_analysis, humanize, precheck, insights
 from core.embeddings import EmbeddingEngine
 from core.vector_store import VectorStore
 from core.llm_backend import get_llm_backend
@@ -65,6 +65,9 @@ async def lifespan(app: FastAPI):
         engagement_predictor.set_globals(embedding_engine, vector_store, llm_backend)
         multi_platform.set_globals(embedding_engine, vector_store, llm_backend)
         competitor_analysis.set_globals(embedding_engine, vector_store, llm_backend)
+        humanize.set_globals(embedding_engine, vector_store, llm_backend)
+        precheck.set_globals(embedding_engine, vector_store, llm_backend)
+        insights.set_globals(embedding_engine, vector_store, llm_backend)
         
         logger.info("✅ All systems ready!")
         
@@ -111,6 +114,9 @@ app.include_router(thumbnail_ab.router)
 app.include_router(engagement_predictor.router)
 app.include_router(multi_platform.router)
 app.include_router(competitor_analysis.router)
+app.include_router(humanize.router)
+app.include_router(precheck.router)
+app.include_router(insights.router)
 
 @app.get("/")
 async def root():

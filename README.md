@@ -32,6 +32,9 @@ Generate viral hooks, scripts, shot lists, and music prompts for YouTube Shorts,
 - **Engagement Predictor**: Predict views and engagement before posting based on content quality and historical data
 - **Multi-Platform Optimizer**: Adapt one piece of content for multiple platforms automatically
 - **Competitor Analysis Tool**: Analyze competitor strategies and find content gaps
+- **AI Humanizer**: Rewrite AI content to sound natural and prevent AI detection (CRITICAL for 2025)
+- **Content Pre-Check**: Check content against platform guidelines before posting (like TikTok's pre-check)
+- **Search Insights Integration**: Show trending searches and content opportunities based on real-time trends
 
 ---
 
@@ -243,6 +246,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Engagement Predictor
 - [x] Multi-Platform Optimizer
 - [x] Competitor Analysis Tool
+- [x] AI Humanizer (rewrite AI content to sound natural)
+- [x] Content Pre-Check (check against platform guidelines)
+- [x] Search Insights Integration (trending searches and opportunities)
 
 ### Phase 2
 - [ ] Performance tracking
