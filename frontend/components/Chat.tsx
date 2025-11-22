@@ -1,15 +1,34 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import ChatMessage from './ChatMessage';
 import PlatformSelector from './PlatformSelector';
-import ReferenceInput from './ReferenceInput';
 import GeneratedContent from './GeneratedContent';
 import PersonalitySelector from './PersonalitySelector';
 import AudienceSelector from './AudienceSelector';
 import { Send, Sparkles, Settings } from 'lucide-react';
 import SettingsPanel from './SettingsPanel';
 import { historyStorage, Conversation } from '@/lib/history';
+
+// Import ReferenceInput with SSR disabled to prevent hydration warnings from browser extensions
+const ReferenceInput = dynamic(() => import('./ReferenceInput'), {
+  ssr: false,
+  loading: () => (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Reference (optional but recommended)
+        </label>
+      </div>
+      <div className="flex gap-2">
+        <div className="flex-1 relative">
+          <div className="w-full pl-10 pr-4 py-3 luxury-border bg-white dark:bg-[#1a1a1a] rounded-xl luxury-shadow animate-pulse" />
+        </div>
+      </div>
+    </div>
+  ),
+});
 
 interface Message {
   role: 'user' | 'assistant';
