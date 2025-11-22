@@ -44,29 +44,21 @@ async def lifespan(app: FastAPI):
             base_url=settings.OLLAMA_URL
         )
         
-        # Test LLM connection (non-blocking, with timeout)
-        async def test_llm():
-            try:
-                import asyncio
-                test_response = await asyncio.wait_for(
-                    asyncio.to_thread(
-                        llm_backend.generate,
-                        [{"role": "user", "content": "Say 'ready'"}]
-                    ),
-                    timeout=10.0  # 10 second max for test
-                )
-                logger.info(f"✅ LLM test: {test_response[:50]}")
-            except asyncio.TimeoutError:
-                logger.warning("⚠️ LLM test timed out - Ollama may be slow, but continuing...")
-            except Exception as e:
-                logger.warning(f"⚠️ LLM test failed (may need to start Ollama): {e}")
-        
-        # Run test in background, don't block startup
+        # Test LLM connection (non-blocking, don't fail startup if it hangs)
         try:
-            import asyncio
-            asyncio.create_task(test_llm())
-        except Exception:
-            pass  # Don't fail startup if async task creation fails
+            # Quick check: verify Ollama is responding
+            import requests
+            try:
+                health_check = requests.get(f"{settings.OLLAMA_URL}/api/tags", timeout=2)
+                if health_check.status_code == 200:
+                    logger.info(f"✅ Ollama is responding at {settings.OLLAMA_URL}")
+                else:
+                    logger.warning(f"⚠️ Ollama responded with status {health_check.status_code}")
+            except requests.exceptions.RequestException as e:
+                logger.warning(f"⚠️ Cannot reach Ollama at {settings.OLLAMA_URL}: {e}")
+                logger.warning("⚠️ Backend will start, but generation will fail until Ollama is running")
+        except Exception as e:
+            logger.warning(f"⚠️ LLM health check failed: {e}")
         
         # Inject globals into routers after initialization
         generate.set_globals(embedding_engine, vector_store, llm_backend)
