@@ -252,23 +252,23 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#0f0f0f] rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-800">
+      <div className="bg-[var(--background)] rounded-lg luxury-shadow-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col luxury-border">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-800">
+        <div className="flex items-center justify-between p-6 border-b luxury-border">
           <div className="flex items-center gap-3">
-            <Sparkles className="w-6 h-6 text-purple-500" />
-            <h2 className="text-2xl font-bold text-gray-100">Marketing Team</h2>
+            <Sparkles className="w-6 h-6 text-[var(--accent)]" />
+            <h2 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">Marketing Team</h2>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowTemplates(!showTemplates)}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm transition"
+              className="px-4 py-2 luxury-accent hover:opacity-90 text-white rounded-lg text-sm transition luxury-shadow"
             >
               {showTemplates ? 'Show My Agents' : 'Hire Team Members'}
             </button>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400 hover:text-gray-200"
+              className="p-2 hover:bg-[var(--muted)] rounded-lg transition text-[var(--foreground)]/60 hover:text-[var(--foreground)]"
             >
               <X className="w-5 h-5" />
             </button>
@@ -276,22 +276,22 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 bg-[var(--background)]">
           {showTemplates ? (
             <>
               {/* Hire Full Team Banner */}
-              <div className="mb-8 p-6 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl border border-purple-500/20">
+              <div className="mb-8 p-6 luxury-accent text-white rounded-xl luxury-shadow-lg border border-[var(--accent)]/30">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">Hire Your Complete Marketing Team</h2>
-                    <p className="text-purple-100">
+                    <h2 className="text-2xl font-bold mb-2 tracking-tight">Hire Your Complete Marketing Team</h2>
+                    <p className="text-white/90">
                       Get all 16 specialists working for you instantly
                     </p>
                   </div>
                   <button
                     onClick={hireFullTeam}
                     disabled={hiringTeam}
-                    className="px-6 py-3 bg-white text-purple-600 rounded-lg font-bold hover:bg-purple-50 transition-colors whitespace-nowrap disabled:opacity-50"
+                    className="px-6 py-3 bg-white text-[var(--accent-dark)] rounded-lg font-bold hover:bg-[var(--accent-light)] transition-colors whitespace-nowrap disabled:opacity-50 luxury-shadow"
                   >
                     {hiringTeam ? 'Hiring Team...' : 'Hire Full Team'}
                   </button>
@@ -304,10 +304,10 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                   <button
                     key={team.id}
                     onClick={() => setSelectedTeam(team.id)}
-                    className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
+                    className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all luxury-shadow ${
                       selectedTeam === team.id
-                        ? 'bg-purple-500 text-white'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
+                        ? 'luxury-accent text-white'
+                        : 'bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] hover:border-[var(--accent)]/50 luxury-border'
                     }`}
                   >
                     {team.label}
@@ -322,34 +322,34 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                   .map((template, idx) => (
                     <div
                       key={idx}
-                      className="border border-gray-800 rounded-lg p-4 hover:border-purple-500/50 transition bg-[#1a1a1a]"
+                      className="luxury-border rounded-lg p-4 hover:border-[var(--accent)]/50 transition bg-white dark:bg-[#1a1a1a] luxury-shadow"
                     >
                       <div className="flex items-start gap-3 mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-lg text-gray-100">{template.name}</h3>
-                            <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs font-medium border border-purple-500/30">
+                            <h3 className="font-bold text-lg text-[var(--foreground)]">{template.name}</h3>
+                            <span className="px-2 py-1 bg-[var(--accent)]/10 text-[var(--accent)] rounded text-xs font-medium border border-[var(--accent)]/30">
                               {template.team}
                             </span>
                           </div>
-                          <div className="text-xs text-gray-400 mb-2">
+                          <div className="text-xs text-[var(--foreground)]/60 mb-2">
                             {template.agent_type.replace(/_/g, ' ')}
                           </div>
                         </div>
                       </div>
                       
-                      <p className="text-sm text-gray-300 mb-4">{template.description}</p>
+                      <p className="text-sm text-[var(--foreground)]/80 mb-4">{template.description}</p>
                       
                       <div className="mb-4">
-                        <div className="text-xs font-medium text-gray-400 mb-1">Capabilities:</div>
+                        <div className="text-xs font-medium text-[var(--foreground)]/60 mb-1">Capabilities:</div>
                         <div className="flex flex-wrap gap-1">
                           {template.capabilities.slice(0, 3).map((cap, i) => (
-                            <span key={i} className="px-2 py-1 bg-gray-800 text-gray-300 rounded text-xs border border-gray-700">
+                            <span key={i} className="px-2 py-1 bg-[var(--muted)] text-[var(--foreground)] rounded text-xs luxury-border">
                               {cap.replace(/_/g, ' ')}
                             </span>
                           ))}
                           {template.capabilities.length > 3 && (
-                            <span className="px-2 py-1 bg-gray-800 text-gray-300 rounded text-xs border border-gray-700">
+                            <span className="px-2 py-1 bg-[var(--muted)] text-[var(--foreground)] rounded text-xs luxury-border">
                               +{template.capabilities.length - 3} more
                             </span>
                           )}
@@ -390,7 +390,7 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                           
                           await createFromTemplate(templateId, platform, niche, goal);
                         }}
-                        className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium"
+                        className="w-full px-4 py-2 luxury-accent hover:opacity-90 text-white rounded-lg transition text-sm font-medium luxury-shadow"
                       >
                         Hire This Agent
                       </button>
@@ -401,10 +401,10 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
           ) : !showCreateForm && !editingAgent ? (
             <>
               <div className="mb-4 flex justify-between items-center">
-                <p className="text-gray-300">Your hired marketing team members</p>
+                <p className="text-[var(--foreground)]/80">Your hired marketing team members</p>
                 <button
                   onClick={() => setShowCreateForm(true)}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 transition"
+                  className="px-4 py-2 luxury-accent hover:opacity-90 text-white rounded-lg flex items-center gap-2 transition luxury-shadow"
                 >
                   <Plus className="w-4 h-4" />
                   Custom Agent
@@ -413,11 +413,11 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
 
               {agents.length === 0 ? (
                 <div className="text-center py-12">
-                  <Sparkles className="w-16 h-16 mx-auto text-gray-600 mb-4" />
-                  <p className="text-gray-400 mb-4">No agents yet. Create your first one!</p>
+                  <Sparkles className="w-16 h-16 mx-auto text-[var(--accent)]/40 mb-4" />
+                  <p className="text-[var(--foreground)]/60 mb-4">No agents yet. Create your first one!</p>
                   <button
                     onClick={() => setShowCreateForm(true)}
-                    className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                    className="px-6 py-3 luxury-accent hover:opacity-90 text-white rounded-lg transition luxury-shadow"
                   >
                     Create Agent
                   </button>
@@ -427,15 +427,15 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                   {agents.map((agent) => (
                     <div
                       key={agent.id}
-                      className="border border-gray-800 rounded-lg p-4 hover:border-purple-500/50 transition bg-[#1a1a1a]"
+                      className="luxury-border rounded-lg p-4 hover:border-[var(--accent)]/50 transition bg-white dark:bg-[#1a1a1a] luxury-shadow"
                     >
                       <div className="flex items-start gap-3 mb-3">
                         <div className="flex-1">
                           <div className="flex justify-between items-start mb-1">
                             <div className="flex-1">
-                              <h3 className="text-lg font-semibold text-gray-100">{agent.name}</h3>
+                              <h3 className="text-lg font-semibold text-[var(--foreground)]">{agent.name}</h3>
                               {agent.team && (
-                                <span className="inline-block px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs font-medium mt-1 border border-purple-500/30">
+                                <span className="inline-block px-2 py-1 bg-[var(--accent)]/10 text-[var(--accent)] rounded text-xs font-medium mt-1 border border-[var(--accent)]/30">
                                   {agent.team}
                                 </span>
                               )}
@@ -452,7 +452,7 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                                     description: agent.description || '',
                                   });
                                 }}
-                                className="p-1 text-purple-400 hover:bg-purple-500/20 rounded transition"
+                                className="p-1 text-[var(--accent)] hover:bg-[var(--accent)]/10 rounded transition"
                                 title="Edit"
                               >
                                 <Edit2 className="w-4 h-4" />
@@ -468,18 +468,18 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                           </div>
                         </div>
                       </div>
-                      <div className="space-y-1 text-sm text-gray-300">
-                        <p><span className="font-medium text-gray-200">Platform:</span> {platforms.find(p => p.id === agent.platform)?.label || agent.platform}</p>
-                        <p><span className="font-medium text-gray-200">Niche:</span> {agent.niche}</p>
-                        <p><span className="font-medium text-gray-200">Goal:</span> {goals.find(g => g.id === agent.goal)?.label || agent.goal}</p>
-                        {agent.description && <p className="text-gray-400 mt-2">{agent.description}</p>}
+                      <div className="space-y-1 text-sm text-[var(--foreground)]/80">
+                        <p><span className="font-medium text-[var(--foreground)]">Platform:</span> {platforms.find(p => p.id === agent.platform)?.label || agent.platform}</p>
+                        <p><span className="font-medium text-[var(--foreground)]">Niche:</span> {agent.niche}</p>
+                        <p><span className="font-medium text-[var(--foreground)]">Goal:</span> {goals.find(g => g.id === agent.goal)?.label || agent.goal}</p>
+                        {agent.description && <p className="text-[var(--foreground)]/60 mt-2">{agent.description}</p>}
                       </div>
                       <button
                         onClick={() => {
                           onSelectAgent(agent);
                           onClose();
                         }}
-                        className="mt-4 w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                        className="mt-4 w-full px-4 py-2 luxury-accent hover:opacity-90 text-white rounded-lg transition luxury-shadow"
                       >
                         Use This Agent
                       </button>
@@ -490,12 +490,12 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
             </>
           ) : (
             <div className="max-w-2xl mx-auto">
-              <h3 className="text-xl font-semibold mb-4 text-gray-100">
+              <h3 className="text-xl font-semibold mb-4 text-[var(--foreground)] tracking-tight">
                 {editingAgent ? 'Edit Agent' : 'Create New Agent'}
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground)]/80 mb-1">
                     Agent Name *
                   </label>
                   <input
@@ -503,28 +503,28 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., Science & Tech YouTube"
-                    className="w-full p-3 border border-gray-700 bg-[#1a1a1a] text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    className="w-full p-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground)]/80 mb-1">
                     Platform *
                   </label>
                   <select
                     value={formData.platform}
                     onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
-                    className="w-full p-3 border border-gray-700 bg-[#1a1a1a] text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    className="w-full p-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
                   >
-                    <option value="" className="bg-[#1a1a1a]">Select platform</option>
+                    <option value="">Select platform</option>
                     {platforms.map((p) => (
-                      <option key={p.id} value={p.id} className="bg-[#1a1a1a]">{p.label}</option>
+                      <option key={p.id} value={p.id}>{p.label}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground)]/80 mb-1">
                     Niche *
                   </label>
                   <input
@@ -532,28 +532,28 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                     value={formData.niche}
                     onChange={(e) => setFormData({ ...formData, niche: e.target.value })}
                     placeholder="e.g., science, tech, horror, travel"
-                    className="w-full p-3 border border-gray-700 bg-[#1a1a1a] text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    className="w-full p-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground)]/80 mb-1">
                     Goal
                   </label>
                   <select
                     value={formData.goal}
                     onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
-                    className="w-full p-3 border border-gray-700 bg-[#1a1a1a] text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    className="w-full p-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
                   >
-                    <option value="" className="bg-[#1a1a1a]">Select goal</option>
+                    <option value="">Select goal</option>
                     {goals.map((g) => (
-                      <option key={g.id} value={g.id} className="bg-[#1a1a1a]">{g.label}</option>
+                      <option key={g.id} value={g.id}>{g.label}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground)]/80 mb-1">
                     Description (optional)
                   </label>
                   <textarea
@@ -561,7 +561,7 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="Describe this agent's focus and style..."
                     rows={3}
-                    className="w-full p-3 border border-gray-700 bg-[#1a1a1a] text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    className="w-full p-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
                   />
                 </div>
 
@@ -584,7 +584,7 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                         console.error('Error updating agent:', error);
                       }
                     } : handleCreate}
-                    className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                    className="flex-1 px-6 py-3 luxury-accent hover:opacity-90 text-white rounded-lg transition luxury-shadow"
                   >
                     {editingAgent ? 'Update Agent' : 'Create Agent'}
                   </button>
@@ -594,7 +594,7 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                       setEditingAgent(null);
                       setFormData({ name: '', platform: '', niche: '', goal: '', description: '' });
                     }}
-                    className="px-6 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition border border-gray-700"
+                    className="px-6 py-3 bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-lg hover:bg-[var(--muted)] transition luxury-border luxury-shadow"
                   >
                     Cancel
                   </button>
