@@ -22,20 +22,22 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
   // Remove data-has-listeners attribute after mount (added by browser extensions)
   useEffect(() => {
     const removeExtensionAttributes = () => {
-      // Remove from all inputs in this component
-      const inputs = document.querySelectorAll('[data-has-listeners]');
-      inputs.forEach((input) => {
-        input.removeAttribute('data-has-listeners');
-      });
+      // Remove from this specific input
+      if (inputRef.current && inputRef.current.hasAttribute('data-has-listeners')) {
+        inputRef.current.removeAttribute('data-has-listeners');
+      }
+      // Also check link input
+      const linkInput = document.querySelector('input[type="url"]');
+      if (linkInput && linkInput.hasAttribute('data-has-listeners')) {
+        linkInput.removeAttribute('data-has-listeners');
+      }
     };
     
     // Run multiple times to catch attributes added at different times
-    const intervals = [
-      setTimeout(removeExtensionAttributes, 0),
-      setTimeout(removeExtensionAttributes, 100),
-      setTimeout(removeExtensionAttributes, 500),
-      setTimeout(removeExtensionAttributes, 1000)
-    ];
+    const intervals: NodeJS.Timeout[] = [];
+    [0, 50, 100, 200, 500, 1000, 2000].forEach(delay => {
+      intervals.push(setTimeout(removeExtensionAttributes, delay));
+    });
     
     // Also use MutationObserver to catch attributes added dynamically
     const observer = new MutationObserver((mutations) => {
@@ -49,16 +51,21 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
       });
     });
     
-    // Observe all inputs for attribute changes
+    // Observe the input for attribute changes
     if (inputRef.current) {
       observer.observe(inputRef.current, {
         attributes: true,
-        attributeFilter: ['data-has-listeners']
+        attributeFilter: ['data-has-listeners'],
+        attributeOldValue: false
       });
     }
     
+    // Also set up interval to check periodically
+    const intervalId = setInterval(removeExtensionAttributes, 1000);
+    
     return () => {
       intervals.forEach(id => clearTimeout(id));
+      clearInterval(intervalId);
       observer.disconnect();
     };
   }, []);
