@@ -761,7 +761,13 @@ def save_agents(agents: List[Dict]):
 @router.get("/templates")
 async def list_templates():
     """Get all agent templates"""
-    return {"templates": list(AGENT_TEMPLATES.values())}
+    # Include template_id with each template
+    templates = []
+    for template_id, template in AGENT_TEMPLATES.items():
+        template_with_id = template.copy()
+        template_with_id["template_id"] = template_id
+        templates.append(template_with_id)
+    return {"templates": templates}
 
 @router.get("/templates/{template_id}")
 async def get_template(template_id: str):
