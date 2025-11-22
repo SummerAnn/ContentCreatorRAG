@@ -111,7 +111,7 @@ class TrendService:
             try:
                 url = f"https://www.reddit.com/r/{subreddit}/hot.json?limit=10"
                 headers = {'User-Agent': self.user_agent}
-                response = requests.get(url, headers=headers, timeout=5)
+                response = requests.get(url, headers=headers, timeout=3)  # Reduced timeout
                 
                 if response.status_code == 200:
                     data = response.json()

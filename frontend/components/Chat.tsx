@@ -269,13 +269,14 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
       const decoder = new TextDecoder();
       let fullContent = '';
       let lastChunkTime = Date.now();
-      const CHUNK_TIMEOUT = 30000; // 30 seconds max between chunks
+      const CHUNK_TIMEOUT = 60000; // 60 seconds max between chunks (LLM can be slow)
+      let statusMessage = 'Initializing...';
 
       if (reader) {
         while (true) {
           // Check for timeout between chunks
           if (Date.now() - lastChunkTime > CHUNK_TIMEOUT) {
-            throw new Error('Stream timeout: No data received for 30 seconds');
+            throw new Error('Stream timeout: No data received for 60 seconds');
           }
 
           const { done, value } = await reader.read();
@@ -289,6 +290,17 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6));
+                
+                // Handle status updates
+                if (data.status || data.message) {
+                  statusMessage = data.message || data.status;
+                  setCurrentGeneration({ 
+                    type: contentType, 
+                    content: fullContent || statusMessage 
+                  });
+                  continue;
+                }
+                
                 if (data.chunk) {
                   fullContent += data.chunk;
                   setCurrentGeneration({ type: contentType, content: fullContent });

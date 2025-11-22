@@ -44,51 +44,71 @@ async def generate_hooks(req: GenerateRequest):
         raise HTTPException(status_code=503, detail="Backend not fully initialized")
     
     try:
-        # Initialize RAG engine
-        rag = RAGEngine(embedding_engine, vector_store, llm_backend)
-        
-        # Build query
-        query_text = f"{req.platform} {req.niche} {req.goal} {req.reference_text or ''}"
-        
-        # RAG retrieval
-        rag_results = rag.retrieve_context(
-            user_id=req.user_id,
-            query=query_text,
-            platform=req.platform,
-            top_k=10
-        )
-        
-        # Get trending topics
-        trends = trend_service.get_trends(
-            platform=req.platform,
-            niche=req.niche,
-            use_cache=True
-        )
-        trends_text = trend_service.format_trends_for_prompt(trends, max_count=5)
-        
-        # Build prompt with RAG context and trends
-        messages = hooks.build_hook_prompt(
-            platform=req.platform,
-            niche=req.niche,
-            goal=req.goal,
-            personality=req.personality,
-            audience=req.audience,
-            reference=req.reference_text or "No specific reference",
-            rag_examples=rag_results,
-            trends=trends_text
-        )
-        
-        # Generate (streaming)
+        # Generate (streaming) - start immediately with progress updates
         async def stream_response():
+        try:
+            # Send initial status
+            yield f"data: {json.dumps({'status': 'starting', 'message': 'Initializing...'})}\n\n"
+            
+            # Initialize RAG engine (non-blocking)
+            rag = RAGEngine(embedding_engine, vector_store, llm_backend)
+            
+            # Build query
+            query_text = f"{req.platform} {req.niche} {req.goal} {req.reference_text or ''}"
+            
+            yield f"data: {json.dumps({'status': 'retrieving', 'message': 'Finding relevant examples...'})}\n\n"
+            
+            # RAG retrieval - limit to 5 for speed
             try:
-                for chunk in llm_backend.generate_stream(messages, temperature=0.95):
-                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-                yield f"data: {json.dumps({'done': True})}\n\n"
+                rag_results = rag.retrieve_context(
+                    user_id=req.user_id,
+                    query=query_text,
+                    platform=req.platform,
+                    top_k=5  # Reduced from 10 for speed
+                )
             except Exception as e:
-                logger.error(f"Generation error: {e}")
-                yield f"data: {json.dumps({'error': str(e)})}\n\n"
-        
-        return StreamingResponse(stream_response(), media_type="text/event-stream")
+                logger.warning(f"RAG retrieval failed: {e}, continuing without RAG")
+                rag_results = []
+            
+            yield f"data: {json.dumps({'status': 'trends', 'message': 'Checking trends...'})}\n\n"
+            
+            # Get trending topics (non-blocking, use cache)
+            trends_text = ""
+            try:
+                trends = trend_service.get_trends(
+                    platform=req.platform,
+                    niche=req.niche,
+                    use_cache=True
+                )
+                trends_text = trend_service.format_trends_for_prompt(trends, max_count=3)  # Reduced for speed
+            except Exception as e:
+                logger.warning(f"Trend fetching failed: {e}, continuing without trends")
+                trends_text = ""
+            
+            yield f"data: {json.dumps({'status': 'generating', 'message': 'Generating hooks with AI...'})}\n\n"
+            
+            # Build prompt with RAG context and trends
+            messages = hooks.build_hook_prompt(
+                platform=req.platform,
+                niche=req.niche,
+                goal=req.goal,
+                personality=req.personality,
+                audience=req.audience,
+                reference=req.reference_text or "No specific reference",
+                rag_examples=rag_results,
+                trends=trends_text
+            )
+            
+            # Generate with streaming
+            for chunk in llm_backend.generate_stream(messages, temperature=0.95):
+                yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
+            
+        except Exception as e:
+            logger.error(f"Generation error: {e}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+    
+    return StreamingResponse(stream_response(), media_type="text/event-stream")
     
     except Exception as e:
         logger.error(f"Error generating hooks: {e}")
@@ -102,43 +122,58 @@ async def generate_script(req: GenerateRequest):
         raise HTTPException(status_code=503, detail="Backend not fully initialized")
     
     try:
-        rag = RAGEngine(embedding_engine, vector_store, llm_backend)
-        
-        # Get RAG context
-        query_text = f"{req.platform} {req.niche} script"
-        rag_results = rag.retrieve_context(
-            user_id=req.user_id,
-            query=query_text,
-            platform=req.platform,
-            content_type="script",
-            top_k=5
-        )
-        
-        # Build prompt
-        has_voiceover = req.options.get("has_voiceover", True)
-        messages = scripts.build_script_prompt(
-            platform=req.platform,
-            niche=req.niche,
-            duration=req.options.get("duration", 60),
-            hook=req.options.get("chosen_hook", ""),
-            personality=req.personality,
-            audience=req.audience,
-            reference=req.reference_text or "",
-            rag_examples=rag_results,
-            has_voiceover=has_voiceover
-        )
-        
-        # Generate
         async def stream_response():
             try:
-                for chunk in llm_backend.generate_stream(messages, temperature=0.8):
-                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-                yield f"data: {json.dumps({'done': True})}\n\n"
+                yield f"data: {json.dumps({'status': 'starting', 'message': 'Initializing script generation...'})}\n\n"
+            
+            rag = RAGEngine(embedding_engine, vector_store, llm_backend)
+            
+            # Get RAG context (fast, limited results)
+            yield f"data: {json.dumps({'status': 'retrieving', 'message': 'Finding relevant scripts...'})}\n\n"
+            
+            try:
+                query_text = f"{req.platform} {req.niche} script"
+                rag_results = rag.retrieve_context(
+                    user_id=req.user_id,
+                    query=query_text,
+                    platform=req.platform,
+                    content_type="script",
+                    top_k=3  # Reduced for speed
+                )
             except Exception as e:
-                logger.error(f"Generation error: {e}")
-                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                logger.warning(f"RAG retrieval failed: {e}")
+                rag_results = []
+            
+            yield f"data: {json.dumps({'status': 'generating', 'message': 'Generating script with AI...'})}\n\n"
+            
+            # Build prompt
+            has_voiceover = req.options.get("has_voiceover", True)
+            messages = scripts.build_script_prompt(
+                platform=req.platform,
+                niche=req.niche,
+                duration=req.options.get("duration", 60),
+                hook=req.options.get("chosen_hook", ""),
+                personality=req.personality,
+                audience=req.audience,
+                reference=req.reference_text or "",
+                rag_examples=rag_results,
+                has_voiceover=has_voiceover
+            )
+            
+            # Generate
+            for chunk in llm_backend.generate_stream(messages, temperature=0.8):
+                yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
+            
+        except Exception as e:
+            logger.error(f"Generation error: {e}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
         
         return StreamingResponse(stream_response(), media_type="text/event-stream")
+    
+    except Exception as e:
+        logger.error(f"Error generating script: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
     
     except Exception as e:
         logger.error(f"Error generating script: {e}")
