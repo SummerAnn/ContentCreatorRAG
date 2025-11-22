@@ -150,6 +150,12 @@ npm install
 npm run dev
 ```
 
+**Access the frontend at:** http://localhost:3000
+
+**Note:** 
+- `npm run dev` - Development mode with hot reload (recommended)
+- `npm start` - Production mode (requires `npm run build` first)
+
 ### Running Tests
 
 ```bash
