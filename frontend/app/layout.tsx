@@ -11,6 +11,8 @@ if (typeof window !== 'undefined') {
     if (
       msg.includes('extra attributes from the server') ||
       msg.includes('data-has-listeners') ||
+      msg.includes('extra attributes from the server') ||
+      msg.toLowerCase().includes('hydration') ||
       msg.includes('hydration') && msg.includes('warning') ||
       msg.includes('at input') && msg.includes('at div') ||
       msg.includes('download the react devtools')

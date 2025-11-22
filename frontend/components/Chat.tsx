@@ -214,6 +214,12 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
     };
     setMessages(prev => [...prev, userMessage]);
 
+    // Add abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 120000); // 2 minute timeout for AI generation
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       // Map content types to API endpoints
@@ -233,6 +239,7 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
       const response = await fetch(`${apiUrl}/api/generate/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
           body: JSON.stringify({
           user_id: userId,
           platform,
@@ -252,6 +259,8 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
         })
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -259,12 +268,20 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let fullContent = '';
+      let lastChunkTime = Date.now();
+      const CHUNK_TIMEOUT = 30000; // 30 seconds max between chunks
 
       if (reader) {
         while (true) {
+          // Check for timeout between chunks
+          if (Date.now() - lastChunkTime > CHUNK_TIMEOUT) {
+            throw new Error('Stream timeout: No data received for 30 seconds');
+          }
+
           const { done, value } = await reader.read();
           if (done) break;
 
+          lastChunkTime = Date.now();
           const chunk = decoder.decode(value);
           const lines = chunk.split('\n');
 

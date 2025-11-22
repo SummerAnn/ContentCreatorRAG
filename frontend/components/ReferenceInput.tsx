@@ -29,13 +29,38 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
       });
     };
     
-    // Run after a short delay to ensure attributes are added
-    const timeoutId = setTimeout(removeExtensionAttributes, 100);
+    // Run multiple times to catch attributes added at different times
+    const intervals = [
+      setTimeout(removeExtensionAttributes, 0),
+      setTimeout(removeExtensionAttributes, 100),
+      setTimeout(removeExtensionAttributes, 500),
+      setTimeout(removeExtensionAttributes, 1000)
+    ];
     
-    // Also remove immediately if already present
-    removeExtensionAttributes();
+    // Also use MutationObserver to catch attributes added dynamically
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-has-listeners') {
+          const target = mutation.target as HTMLElement;
+          if (target.hasAttribute('data-has-listeners')) {
+            target.removeAttribute('data-has-listeners');
+          }
+        }
+      });
+    });
     
-    return () => clearTimeout(timeoutId);
+    // Observe all inputs for attribute changes
+    if (inputRef.current) {
+      observer.observe(inputRef.current, {
+        attributes: true,
+        attributeFilter: ['data-has-listeners']
+      });
+    }
+    
+    return () => {
+      intervals.forEach(id => clearTimeout(id));
+      observer.disconnect();
+    };
   }, []);
 
   const examples = [
@@ -197,14 +222,27 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
             ref={inputRef}
             type="text"
             suppressHydrationWarning
+            data-hydration-suppress
             className="w-full pl-10 pr-4 py-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-xl focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
             placeholder="Describe your content idea in detail... (e.g., 'A cozy study session with soft lighting, ambient music, and productivity tips')"
             value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onFocus={() => {
+            onChange={(e) => {
+              onChange(e.target.value);
+              // Remove extension attributes on change too
+              if (e.target.hasAttribute('data-has-listeners')) {
+                e.target.removeAttribute('data-has-listeners');
+              }
+            }}
+            onFocus={(e) => {
               // Remove extension attributes when focused
-              if (inputRef.current) {
-                inputRef.current.removeAttribute('data-has-listeners');
+              if (e.target.hasAttribute('data-has-listeners')) {
+                e.target.removeAttribute('data-has-listeners');
+              }
+            }}
+            onBlur={(e) => {
+              // Remove extension attributes when blurred
+              if (e.target.hasAttribute('data-has-listeners')) {
+                e.target.removeAttribute('data-has-listeners');
               }
             }}
           />
