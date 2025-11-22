@@ -105,7 +105,7 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
     }
   };
 
-  const createFromTemplate = async (templateId: string, platform: string = 'tiktok', niche: string = 'general', goal: string = 'grow_followers') => {
+  const createFromTemplate = async (templateId: string, platform: string = 'tiktok', niche: string = 'general', goal: string = 'grow_followers', silent: boolean = false) => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const params = new URLSearchParams({
@@ -120,14 +120,25 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
       });
 
       if (response.ok) {
-        await loadAgents();
-        alert(`${templateId.replace(/_/g, ' ')} hired successfully!`);
+        const data = await response.json();
+        if (!silent) {
+          await loadAgents();
+          // Get friendly name from template or use formatted templateId
+          const templates = await fetch(`${apiUrl}/api/agents/templates`).then(r => r.json()).catch(() => ({ templates: [] }));
+          const template = templates.templates?.find((t: any) => t.template_id === templateId);
+          const agentName = template?.name || templateId.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
+          alert(`${agentName} hired successfully!`);
+        }
+        return data; // Return the created agent data
       } else {
         throw new Error('Failed to create agent');
       }
     } catch (error) {
       console.error('Error creating from template:', error);
-      alert('Failed to hire agent. Please try again.');
+      if (!silent) {
+        alert('Failed to hire agent. Please try again.');
+      }
+      throw error;
     }
   };
 
