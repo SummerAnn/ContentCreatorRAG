@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, X, Plus, History, Settings, Database, Bot, Sparkles, Home, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import { Menu, X, Plus, History, Settings, Database, Bot, Sparkles, Home, ChevronLeft, ChevronRight, FileText, Layers } from 'lucide-react';
 import AgentManager from './AgentManager';
 import RandomIdeaRoaster from './RandomIdeaRoaster';
 import ConversationHistory from './ConversationHistory';
 import IdeaNotes from './IdeaNotes';
+import TemplateLibrary from './TemplateLibrary';
+import SwipeFileComponent from './SwipeFile';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -25,6 +27,8 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
   const [showSettings, setShowSettings] = useState(false);
   const [showIdeaRoaster, setShowIdeaRoaster] = useState(false);
   const [showIdeaNotes, setShowIdeaNotes] = useState(false);
+  const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
+  const [showSwipeFile, setShowSwipeFile] = useState(false);
 
   const handleAgentSelect = (agent: any) => {
     if (onAgentSelect) {
@@ -124,6 +128,20 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
             </button>
 
             <button 
+              onClick={() => setShowTemplateLibrary(true)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'Template Library' : undefined}
+            >
+              <Layers size={20} />
+              {!isCollapsed && <span>Template Library</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Template Library
+                </span>
+              )}
+            </button>
+
+            <button 
               onClick={() => setShowIdeaNotes(true)}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
               title={isCollapsed ? 'Idea Notes' : undefined}
@@ -133,6 +151,20 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
               {isCollapsed && (
                 <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
                   Idea Notes
+                </span>
+              )}
+            </button>
+
+            <button 
+              onClick={() => setShowSwipeFile(true)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'Swipe File' : undefined}
+            >
+              <Database size={20} />
+              {!isCollapsed && <span>Swipe File</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Swipe File
                 </span>
               )}
             </button>
@@ -236,6 +268,37 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
             }
             setShowIdeaNotes(false);
           }}
+        />
+      )}
+
+      {/* Template Library Modal */}
+      {showTemplateLibrary && (
+        <TemplateLibrary
+          isOpen={showTemplateLibrary}
+          onClose={() => setShowTemplateLibrary(false)}
+          onSelectTemplate={(template) => {
+            // When template is selected, create an agent-like selection
+            // The template will be applied when generating content
+            if (onAgentSelect) {
+              onAgentSelect({
+                platform: template.platforms[0] || '',
+                niche: template.niches[0] || '',
+                goal: 'entertainment',
+                personality: 'friendly',
+                audience: ['gen_z'],
+                reference: template.description
+              });
+            }
+            setShowTemplateLibrary(false);
+          }}
+        />
+      )}
+
+      {/* Swipe File Modal */}
+      {showSwipeFile && (
+        <SwipeFileComponent
+          isOpen={showSwipeFile}
+          onClose={() => setShowSwipeFile(false)}
         />
       )}
 

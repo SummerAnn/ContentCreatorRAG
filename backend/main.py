@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 from contextlib import asynccontextmanager
 import logging
 
-from routers import generate, upload, agents, chat, trends
+from routers import generate, upload, agents, chat, trends, templates, swipefile
 from core.embeddings import EmbeddingEngine
 from core.vector_store import VectorStore
 from core.llm_backend import get_llm_backend
@@ -95,6 +95,8 @@ app.include_router(upload.router)
 app.include_router(agents.router)
 app.include_router(chat.router)
 app.include_router(trends.router)
+app.include_router(templates.router)
+app.include_router(swipefile.router)
 
 @app.get("/")
 async def root():

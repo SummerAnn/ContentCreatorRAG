@@ -20,6 +20,8 @@ Generate viral hooks, scripts, shot lists, and music prompts for YouTube Shorts,
 - **Conversation History**: Save and revisit past conversations
 - **Luxury UI**: Beautiful black & cream design with Manrope font
 - **Tool Recommendations**: Get AI-suggested tools based on your content type
+- **Template Library**: 10+ ready-to-use templates for instant content creation (Storytime, Product Review, Educational, etc.)
+- **Personal Swipe File**: Save and organize inspiration videos with tags and notes
 - **Trend Integration**: Real-time trending topics from Reddit and pattern-based sources
 - **Talk or No Talking**: Choose voiceover scripts or silent text-overlay content
 
