@@ -16,8 +16,14 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
   const [isExtracting, setIsExtracting] = useState(false);
   const [linkInput, setLinkInput] = useState('');
   const [showLinkInput, setShowLinkInput] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Client-side only rendering to prevent hydration mismatches
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   // Remove data-has-listeners attribute immediately and continuously
   useEffect(() => {
@@ -261,34 +267,39 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
       <div className="flex gap-2" suppressHydrationWarning>
         <div className="flex-1 relative" suppressHydrationWarning>
           <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
-          <input
-            ref={inputRef}
-            type="text"
-            suppressHydrationWarning
-            data-hydration-suppress="true"
-            className="w-full pl-10 pr-4 py-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-xl focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
-            placeholder="Describe your content idea in detail... (e.g., 'A cozy study session with soft lighting, ambient music, and productivity tips')"
-            value={value}
-            onChange={(e) => {
-              onChange(e.target.value);
-              // Remove extension attributes on change too
-              if (e.target.hasAttribute('data-has-listeners')) {
-                e.target.removeAttribute('data-has-listeners');
-              }
-            }}
-            onFocus={(e) => {
-              // Remove extension attributes when focused
-              if (e.target.hasAttribute('data-has-listeners')) {
-                e.target.removeAttribute('data-has-listeners');
-              }
-            }}
-            onBlur={(e) => {
-              // Remove extension attributes when blurred
-              if (e.target.hasAttribute('data-has-listeners')) {
-                e.target.removeAttribute('data-has-listeners');
-              }
-            }}
-          />
+          {isMounted ? (
+            <input
+              ref={inputRef}
+              type="text"
+              suppressHydrationWarning
+              className="w-full pl-10 pr-4 py-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-xl focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
+              placeholder="Describe your content idea in detail... (e.g., 'A cozy study session with soft lighting, ambient music, and productivity tips')"
+              value={value}
+              onChange={(e) => {
+                onChange(e.target.value);
+                // Remove extension attributes on change too
+                if (e.target.hasAttribute('data-has-listeners')) {
+                  e.target.removeAttribute('data-has-listeners');
+                }
+              }}
+              onFocus={(e) => {
+                // Remove extension attributes when focused
+                if (e.target.hasAttribute('data-has-listeners')) {
+                  e.target.removeAttribute('data-has-listeners');
+                }
+              }}
+              onBlur={(e) => {
+                // Remove extension attributes when blurred
+                if (e.target.hasAttribute('data-has-listeners')) {
+                  e.target.removeAttribute('data-has-listeners');
+                }
+              }}
+            />
+          ) : (
+            <div className="w-full pl-10 pr-4 py-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-xl luxury-shadow">
+              {/* Placeholder during SSR */}
+            </div>
+          )}
         </div>
         <input
           ref={fileInputRef}
