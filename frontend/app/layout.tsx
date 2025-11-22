@@ -127,7 +127,11 @@ if (typeof window !== 'undefined') {
       // Catch the specific error format with stack trace
       (msg.includes('warning: extra attributes') && msg.includes('referenceinput')) ||
       // Catch any console.error that mentions both "extra" and "attributes"
-      (msg.includes('extra') && msg.includes('attributes') && (msg.includes('input') || msg.includes('reference')));
+      (msg.includes('extra') && msg.includes('attributes') && (msg.includes('input') || msg.includes('reference'))) ||
+      // Catch app-index.js specific warnings
+      (msg.includes('app-index.js') && msg.includes('extra attributes')) ||
+      // Catch main-app.js specific warnings  
+      (msg.includes('main-app.js') && msg.includes('extra attributes'));
     
     if (isHydrationWarning) {
       return; // Suppress hydration warnings silently
@@ -139,10 +143,13 @@ if (typeof window !== 'undefined') {
   const originalWindowError = window.onerror;
   window.onerror = function(message, source, lineno, colno, error) {
     const msg = String(message || '').toLowerCase();
+    const src = String(source || '').toLowerCase();
     if (
       msg.includes('extra attributes') ||
       msg.includes('data-has-listeners') ||
-      (msg.includes('hydration') && msg.includes('warning'))
+      (msg.includes('hydration') && msg.includes('warning')) ||
+      (src.includes('app-index.js') && msg.includes('warning')) ||
+      (src.includes('main-app.js') && msg.includes('warning'))
     ) {
       return true; // Suppress
     }
