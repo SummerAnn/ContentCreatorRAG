@@ -86,21 +86,38 @@ class OllamaBackend(LLMBackend):
             response.raise_for_status()
             
             chunk_count = 0
-            for line in response.iter_lines():
-                if line:
-                    import json
-                    try:
-                        data = json.loads(line)
-                        if "message" in data and "content" in data["message"]:
-                            content = data["message"]["content"]
-                            if content:  # Only yield non-empty content
-                                yield content
-                                chunk_count += 1
-                        
-                        if data.get("done"):
+            try:
+                for line in response.iter_lines():
+                    if line:
+                        import json
+                        try:
+                            data = json.loads(line)
+                            if "message" in data and "content" in data["message"]:
+                                content = data["message"]["content"]
+                                if content:  # Only yield non-empty content
+                                    try:
+                                        yield content
+                                        chunk_count += 1
+                                    except (BrokenPipeError, ConnectionError, OSError) as e:
+                                        logger.warning(f"Client disconnected during LLM streaming: {e}")
+                                        break  # Stop yielding if client disconnected
+                            
+                            if data.get("done"):
+                                break
+                        except json.JSONDecodeError:
+                            continue  # Skip malformed JSON
+                        except (BrokenPipeError, ConnectionError, OSError) as e:
+                            logger.warning(f"Connection error during LLM streaming: {e}")
                             break
-                    except json.JSONDecodeError:
-                        continue
+                        except Exception as e:
+                            logger.warning(f"Error parsing chunk: {e}")
+                            continue
+            except (BrokenPipeError, ConnectionError, OSError) as e:
+                logger.warning(f"Connection broken during LLM stream iteration: {e}")
+                # Don't raise - just stop yielding
+            except Exception as e:
+                logger.error(f"Unexpected error in LLM streaming: {e}")
+                raise
             
             # If no chunks received, model might not be responding
             if chunk_count == 0:

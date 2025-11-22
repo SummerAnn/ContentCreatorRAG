@@ -545,18 +545,53 @@ async def generate_tags(req: GenerateRequest):
             try:
                 if agent:
                     agent_name = agent.get("name", "agent")
-                    yield f"data: {json.dumps({'status': 'agent', 'message': f'Using {agent_name} agent...'})}\n\n"
-                for chunk in llm_backend.generate_stream(messages, temperature=temperature):
-                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-                yield f"data: {json.dumps({'done': True})}\n\n"
+                    try:
+                        yield f"data: {json.dumps({'status': 'agent', 'message': f'Using {agent_name} agent...'})}\n\n"
+                    except (BrokenPipeError, ConnectionError, OSError):
+                        logger.warning("Client disconnected before generation started")
+                        return
+                
+                # Wrap LLM generation in try-except to catch broken pipe and other errors
+                try:
+                    for chunk in llm_backend.generate_stream(messages, temperature=temperature):
+                        try:
+                            yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+                        except (BrokenPipeError, ConnectionError, OSError) as e:
+                            logger.warning(f"Client disconnected during streaming: {e}")
+                            break  # Stop trying to send if client disconnected
+                        except Exception as e:
+                            logger.error(f"Error yielding chunk: {e}")
+                            # Continue trying to send other chunks
+                    
+                    try:
+                        yield f"data: {json.dumps({'done': True})}\n\n"
+                    except (BrokenPipeError, ConnectionError, OSError):
+                        logger.warning("Client disconnected before sending done signal")
+                except (BrokenPipeError, ConnectionError, OSError) as e:
+                    logger.warning(f"Connection broken during LLM generation: {e}")
+                    # Don't yield error if connection is already broken
+                    return
+                except Exception as e:
+                    logger.error(f"LLM generation error: {e}")
+                    try:
+                        yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                    except (BrokenPipeError, ConnectionError, OSError):
+                        logger.warning("Could not send error message - client disconnected")
             except Exception as e:
-                logger.error(f"Generation error: {e}")
-                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                logger.error(f"Stream response error: {e}")
+                try:
+                    yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                except (BrokenPipeError, ConnectionError, OSError):
+                    logger.warning("Could not send error message - client disconnected")
         
         return StreamingResponse(stream_response(), media_type="text/event-stream")
     
     except Exception as e:
         logger.error(f"Error generating tags: {e}")
+        # Check if it's a broken pipe - don't raise 500 for that
+        if "Broken pipe" in str(e) or "Errno 32" in str(e):
+            logger.warning(f"Broken pipe error in tags generation (client disconnected): {e}")
+            raise HTTPException(status_code=499, detail="Client disconnected")  # 499 = Client Closed Request
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/thumbnails")
