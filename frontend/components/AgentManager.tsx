@@ -110,8 +110,15 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
   const createFromTemplate = async (templateId: string, platform: string = 'tiktok', niche: string = 'general', goal: string = 'grow_followers') => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/api/agents/from-template?template_id=${templateId}&platform=${platform}&niche=${niche}&goal=${goal}`, {
+      const params = new URLSearchParams({
+        template_id: templateId,
+        platform: platform,
+        niche: niche,
+        goal: goal
+      });
+      const response = await fetch(`${apiUrl}/api/agents/from-template?${params.toString()}`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (response.ok) {
