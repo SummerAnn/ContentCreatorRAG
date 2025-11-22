@@ -631,11 +631,14 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
               
               <input
                 suppressHydrationWarning
-                className="w-full p-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
+                className={`w-full p-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-lg focus:ring-2 transition luxury-shadow ${
+                  !niche 
+                    ? 'border-amber-500 focus:ring-amber-500 focus:border-amber-500' 
+                    : 'focus:ring-[var(--accent)] focus:border-[var(--accent)]'
+                }`}
                 placeholder="Enter your niche (e.g., travel, food, tech, beauty) *Required"
                 value={niche}
                 onChange={(e) => setNiche(e.target.value)}
-                className={!niche ? 'border-amber-500 focus:ring-amber-500' : ''}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' && platform && niche && personality && audience) {
                     generateContent('hooks');
