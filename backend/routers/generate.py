@@ -18,6 +18,7 @@ def set_globals(emb, vs, llm):
 from core.rag_engine import RAGEngine
 from core.trends import trend_service
 from prompts import hooks, scripts, shots, music, titles, descriptions, tags, thumbnails, beatmap, cta, tools
+from prompts import strategic_tags
 
 logger = logging.getLogger(__name__)
 
@@ -296,13 +297,26 @@ async def generate_tags(req: GenerateRequest):
             top_k=5
         )
         
-        messages = tags.build_tags_prompt(
-            platform=req.platform,
-            niche=req.niche,
-            title=req.options.get("title", ""),
-            reference=req.reference_text or "",
-            rag_examples=rag_results
-        )
+        # Use strategic tags if requested, otherwise basic tags
+        use_strategic = req.options.get("strategic", True)
+        
+        if use_strategic:
+            messages = strategic_tags.build_strategic_tags_prompt(
+                platform=req.platform,
+                niche=req.niche,
+                title=req.options.get("title", ""),
+                reference=req.reference_text or "",
+                goal=req.goal,
+                rag_examples=rag_results
+            )
+        else:
+            messages = tags.build_tags_prompt(
+                platform=req.platform,
+                niche=req.niche,
+                title=req.options.get("title", ""),
+                reference=req.reference_text or "",
+                rag_examples=rag_results
+            )
         
         async def stream_response():
             try:

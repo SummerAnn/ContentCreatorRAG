@@ -24,6 +24,14 @@ Generate viral hooks, scripts, shot lists, and music prompts for YouTube Shorts,
 - **Personal Swipe File**: Save and organize inspiration videos with tags and notes
 - **Trend Integration**: Real-time trending topics from Reddit and pattern-based sources
 - **Talk or No Talking**: Choose voiceover scripts or silent text-overlay content
+- **Content Calendar AI**: Generate strategic monthly/weekly content calendars with themed weeks and optimal posting times
+- **A/B Testing Simulator**: Compare content variants and predict which performs better based on your history
+- **Viral Score Analyzer**: Real-time viral potential scoring as you type (hook strength, pattern match, emotional impact)
+- **Strategic Hashtag Engine**: 30/50/20 mix of viral/community/niche tags optimized for your goals
+- **Thumbnail A/B Tester**: Analyze and compare thumbnail variants for click-worthiness
+- **Engagement Predictor**: Predict views and engagement before posting based on content quality and historical data
+- **Multi-Platform Optimizer**: Adapt one piece of content for multiple platforms automatically
+- **Competitor Analysis Tool**: Analyze competitor strategies and find content gaps
 
 ---
 
@@ -225,12 +233,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Collapsible sidebar
 - [x] Content editing
 - [x] Hook selection workflow
+- [x] Template Library (10+ templates)
+- [x] Personal Swipe File
+- [x] Content Calendar AI
+- [x] A/B Testing Simulator
+- [x] Viral Score Analyzer
+- [x] Strategic Hashtag Engine (30/50/20 mix)
+- [x] Thumbnail A/B Tester
+- [x] Engagement Predictor
+- [x] Multi-Platform Optimizer
+- [x] Competitor Analysis Tool
 
 ### Phase 2
 - [ ] Performance tracking
-- [ ] A/B testing suggestions
-- [x] Trend integration
 - [ ] Analytics-aware feedback
+- [ ] Script-to-Storyboard (requires image generation)
 
 ### Phase 3
 - [ ] Multi-user support
