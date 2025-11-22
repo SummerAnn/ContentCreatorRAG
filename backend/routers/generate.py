@@ -124,49 +124,48 @@ async def generate_script(req: GenerateRequest):
         async def stream_response():
             try:
                 yield f"data: {json.dumps({'status': 'starting', 'message': 'Initializing script generation...'})}\n\n"
-            
-            rag = RAGEngine(embedding_engine, vector_store, llm_backend)
-            
-            # Get RAG context (fast, limited results)
-            yield f"data: {json.dumps({'status': 'retrieving', 'message': 'Finding relevant scripts...'})}\n\n"
-            
-            try:
-                query_text = f"{req.platform} {req.niche} script"
-                rag_results = rag.retrieve_context(
-                    user_id=req.user_id,
-                    query=query_text,
+                
+                rag = RAGEngine(embedding_engine, vector_store, llm_backend)
+                
+                # Get RAG context (fast, limited results)
+                yield f"data: {json.dumps({'status': 'retrieving', 'message': 'Finding relevant scripts...'})}\n\n"
+                
+                try:
+                    query_text = f"{req.platform} {req.niche} script"
+                    rag_results = rag.retrieve_context(
+                        user_id=req.user_id,
+                        query=query_text,
+                        platform=req.platform,
+                        content_type="script",
+                        top_k=3  # Reduced for speed
+                    )
+                except Exception as e:
+                    logger.warning(f"RAG retrieval failed: {e}")
+                    rag_results = []
+                
+                yield f"data: {json.dumps({'status': 'generating', 'message': 'Generating script with AI...'})}\n\n"
+                
+                # Build prompt
+                has_voiceover = req.options.get("has_voiceover", True)
+                messages = scripts.build_script_prompt(
                     platform=req.platform,
-                    content_type="script",
-                    top_k=3  # Reduced for speed
+                    niche=req.niche,
+                    duration=req.options.get("duration", 60),
+                    hook=req.options.get("chosen_hook", ""),
+                    personality=req.personality,
+                    audience=req.audience,
+                    reference=req.reference_text or "",
+                    rag_examples=rag_results,
+                    has_voiceover=has_voiceover
                 )
+                
+                # Generate
+                for chunk in llm_backend.generate_stream(messages, temperature=0.8):
+                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+                yield f"data: {json.dumps({'done': True})}\n\n"
             except Exception as e:
-                logger.warning(f"RAG retrieval failed: {e}")
-                rag_results = []
-            
-            yield f"data: {json.dumps({'status': 'generating', 'message': 'Generating script with AI...'})}\n\n"
-            
-            # Build prompt
-            has_voiceover = req.options.get("has_voiceover", True)
-            messages = scripts.build_script_prompt(
-                platform=req.platform,
-                niche=req.niche,
-                duration=req.options.get("duration", 60),
-                hook=req.options.get("chosen_hook", ""),
-                personality=req.personality,
-                audience=req.audience,
-                reference=req.reference_text or "",
-                rag_examples=rag_results,
-                has_voiceover=has_voiceover
-            )
-            
-            # Generate
-            for chunk in llm_backend.generate_stream(messages, temperature=0.8):
-                yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-            yield f"data: {json.dumps({'done': True})}\n\n"
-            
-        except Exception as e:
-            logger.error(f"Generation error: {e}")
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                logger.error(f"Generation error: {e}")
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
         
         return StreamingResponse(stream_response(), media_type="text/event-stream")
     
