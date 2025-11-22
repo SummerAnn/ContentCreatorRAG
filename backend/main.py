@@ -68,6 +68,7 @@ async def lifespan(app: FastAPI):
         humanize.set_globals(embedding_engine, vector_store, llm_backend)
         precheck.set_globals(embedding_engine, vector_store, llm_backend)
         insights.set_globals(embedding_engine, vector_store, llm_backend)
+        profile.set_llm_backend(llm_backend)
         
         logger.info("✅ All systems ready!")
         

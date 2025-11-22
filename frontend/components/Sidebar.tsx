@@ -212,7 +212,12 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
             </button>
 
             <button 
-              onClick={() => setShowSettings(true)}
+              onClick={() => {
+                // Navigate to settings page
+                if (typeof window !== 'undefined') {
+                  window.location.href = '/settings';
+                }
+              }}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 text-white/70 rounded-lg hover:bg-white/5 transition-all group relative`}
               title={isCollapsed ? 'Settings' : undefined}
             >

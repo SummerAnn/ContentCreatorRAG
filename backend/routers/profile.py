@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from typing import Optional, List, Dict
 from pydantic import BaseModel
 import logging
+import json
 
 from core.database import get_db
 from models.user_profile import UserProfile, UserProfileCreate, UserProfileResponse
