@@ -771,10 +771,15 @@ async def get_template(template_id: str):
     return AGENT_TEMPLATES[template_id]
 
 @router.post("/from-template")
-async def create_from_template(template_id: str, platform: str, niche: str, goal: str):
+async def create_from_template(
+    template_id: str,
+    platform: str,
+    niche: str,
+    goal: str
+):
     """Create an agent from a template"""
     if template_id not in AGENT_TEMPLATES:
-        raise HTTPException(status_code=404, detail="Template not found")
+        raise HTTPException(status_code=404, detail=f"Template not found: {template_id}")
     
     template = AGENT_TEMPLATES[template_id]
     import uuid
