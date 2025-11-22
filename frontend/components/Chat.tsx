@@ -7,7 +7,7 @@ import PlatformSelector from './PlatformSelector';
 import GeneratedContent from './GeneratedContent';
 import PersonalitySelector from './PersonalitySelector';
 import AudienceSelector from './AudienceSelector';
-import { Send, Sparkles, Settings } from 'lucide-react';
+import { Send, Sparkles, Settings, AlertCircle, X } from 'lucide-react';
 import SettingsPanel from './SettingsPanel';
 import { historyStorage, Conversation } from '@/lib/history';
 
@@ -83,6 +83,7 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
   const [chatInput, setChatInput] = useState('');
   const [isChatting, setIsChatting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showNichePopup, setShowNichePopup] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load user profile defaults on mount (before other effects)
@@ -214,13 +215,15 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
   const generateContent = async (contentType: 'hooks' | 'script' | 'shotlist' | 'music' | 'titles' | 'description' | 'tags' | 'thumbnails' | 'beatmap' | 'cta' | 'tools') => {
     // Enforce niche selection first
     if (!niche || niche.trim() === '') {
-      alert('Please select a niche before generating content. The niche helps us create more targeted and relevant content for your audience.');
+      setShowNichePopup(true);
       // Focus on niche input if it exists
-      const nicheInput = document.querySelector('input[placeholder*="niche"], input[placeholder*="Niche"]') as HTMLInputElement;
-      if (nicheInput) {
-        nicheInput.focus();
-        nicheInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      setTimeout(() => {
+        const nicheInput = document.querySelector('input[placeholder*="niche"], input[placeholder*="Niche"]') as HTMLInputElement;
+        if (nicheInput) {
+          nicheInput.focus();
+          nicheInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
       return;
     }
     
