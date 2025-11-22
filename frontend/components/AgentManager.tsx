@@ -137,6 +137,27 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
     }
 
     setHiringTeam(true);
+    
+    // Map template IDs to friendly names for success messages
+    const templateMap: Record<string, string> = {
+      'chief_strategy_officer': 'Chief Strategy Officer',
+      'brand_strategist': 'Brand Strategist',
+      'audience_researcher': 'Audience Research Analyst',
+      'creative_director': 'Creative Director',
+      'copywriter': 'Senior Copywriter',
+      'scriptwriter': 'Video Script Writer',
+      'content_editor': 'Content Editor',
+      'hook_creator': 'Hook Specialist',
+      'thumbnail_designer': 'Thumbnail Designer',
+      'performance_analyst': 'Performance Analyst',
+      'growth_hacker': 'Growth Hacker',
+      'ab_testing_specialist': 'A/B Testing Specialist',
+      'platform_optimizer': 'Platform Optimizer',
+      'seo_hashtag_specialist': 'SEO & Hashtag Specialist',
+      'community_manager': 'Community Manager',
+      'campaign_manager': 'Campaign Manager'
+    };
+    
     const templateIds = [
       'chief_strategy_officer', 'brand_strategist', 'audience_researcher',
       'creative_director', 'copywriter', 'scriptwriter', 'content_editor',
@@ -173,25 +194,38 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
     const userGoal = prompt(`Enter goal (current: ${goal}):`, goal) || goal;
 
     let successCount = 0;
-    let failed: string[] = [];
+    let failed: Array<{ id: string; name: string }> = [];
     
     for (const templateId of templateIds) {
       try {
-        await createFromTemplate(templateId, userPlatform, userNiche, userGoal);
+        const agent = await createFromTemplate(templateId, userPlatform, userNiche, userGoal);
         successCount++;
+        const agentName = templateMap[templateId] || templateId;
+        console.log(`✅ ${agentName} hired successfully!`);
+        // Show success message in console and optionally in UI
+        if (agent && agent.name) {
+          console.log(`   → Agent ID: ${agent.id}, Name: ${agent.name}`);
+        }
         await new Promise(resolve => setTimeout(resolve, 200)); // Small delay between requests
       } catch (error) {
-        console.error(`Failed to create ${templateId}:`, error);
-        failed.push(templateId);
+        const agentName = templateMap[templateId] || templateId;
+        console.error(`❌ Failed to hire ${agentName}:`, error);
+        failed.push({ id: templateId, name: agentName });
       }
     }
 
     setHiringTeam(false);
+    
+    // Show final summary
     if (failed.length > 0) {
-      alert(`Hired ${successCount}/${templateIds.length} team members. Failed: ${failed.join(', ')}`);
+      console.warn(`⚠️ Hired ${successCount}/${templateIds.length} team members.`);
+      console.warn(`   Failed: ${failed.map(f => f.name).join(', ')}`);
+      alert(`Hired ${successCount}/${templateIds.length} team members.\n\nFailed:\n${failed.map(f => `• ${f.name}`).join('\n')}`);
     } else {
+      console.log(`🎉 Successfully hired all ${successCount} team members!`);
       alert(`Successfully hired all ${successCount} team members!`);
     }
+    
     await loadAgents();
   };
 
