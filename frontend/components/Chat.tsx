@@ -25,6 +25,19 @@ interface ChatProps {
 }
 
 export default function Chat({ initialAgent, initialConversation, initialIdea }: ChatProps) {
+  const [userId] = useState(() => {
+    // Get user ID from localStorage or generate one
+    if (typeof window !== 'undefined') {
+      let uid = localStorage.getItem('user_id');
+      if (!uid) {
+        uid = 'user_' + Date.now();
+        localStorage.setItem('user_id', uid);
+      }
+      return uid;
+    }
+    return 'default_user';
+  });
+  
   const [conversationId, setConversationId] = useState<string>(() => initialConversation?.id || `conv_${Date.now()}`);
   const [messages, setMessages] = useState<Message[]>(() => {
     if (initialConversation) {
@@ -328,7 +341,7 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: 'default_user',
+          user_id: userId,
           platform,
           niche,
           goal,

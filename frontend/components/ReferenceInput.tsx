@@ -1,7 +1,7 @@
 'use client';
 
 import { Upload, Link, FileText, Info, X, Loader2, Check } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface ReferenceInputProps {
   value: string;
@@ -17,6 +17,26 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
   const [linkInput, setLinkInput] = useState('');
   const [showLinkInput, setShowLinkInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Remove data-has-listeners attribute after mount (added by browser extensions)
+  useEffect(() => {
+    const removeExtensionAttributes = () => {
+      // Remove from all inputs in this component
+      const inputs = document.querySelectorAll('[data-has-listeners]');
+      inputs.forEach((input) => {
+        input.removeAttribute('data-has-listeners');
+      });
+    };
+    
+    // Run after a short delay to ensure attributes are added
+    const timeoutId = setTimeout(removeExtensionAttributes, 100);
+    
+    // Also remove immediately if already present
+    removeExtensionAttributes();
+    
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   const examples = [
     "A cozy study session with soft lighting and ambient music",
@@ -174,13 +194,19 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
         <div className="flex-1 relative" suppressHydrationWarning>
           <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
           <input
+            ref={inputRef}
             type="text"
             suppressHydrationWarning
             className="w-full pl-10 pr-4 py-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-xl focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
             placeholder="Describe your content idea in detail... (e.g., 'A cozy study session with soft lighting, ambient music, and productivity tips')"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            data-hydration-suppress
+            onFocus={() => {
+              // Remove extension attributes when focused
+              if (inputRef.current) {
+                inputRef.current.removeAttribute('data-has-listeners');
+              }
+            }}
           />
         </div>
         <input
@@ -222,6 +248,10 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
               onChange={(e) => setLinkInput(e.target.value)}
               placeholder="Paste link to inspiration page..."
               className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg text-sm"
+              onFocus={(e) => {
+                // Remove extension attributes when focused
+                e.target.removeAttribute('data-has-listeners');
+              }}
               onKeyPress={(e) => {
                 if (e.key === 'Enter' && !isExtracting) {
                   handleLinkExtract();

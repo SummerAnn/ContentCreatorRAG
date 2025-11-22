@@ -35,6 +35,7 @@ Generate viral hooks, scripts, shot lists, and music prompts for YouTube Shorts,
 - **AI Humanizer**: Rewrite AI content to sound natural and prevent AI detection (CRITICAL for 2025)
 - **Content Pre-Check**: Check content against platform guidelines before posting (like TikTok's pre-check)
 - **Search Insights Integration**: Show trending searches and content opportunities based on real-time trends
+- **User Profile System**: Save your preferences once - platform, niche, personality, audience defaults auto-load
 
 ---
 
@@ -249,6 +250,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] AI Humanizer (rewrite AI content to sound natural)
 - [x] Content Pre-Check (check against platform guidelines)
 - [x] Search Insights Integration (trending searches and opportunities)
+- [x] User Profile System (save preferences, auto-load defaults)
 
 ### Phase 2
 - [ ] Performance tracking
