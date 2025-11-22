@@ -21,7 +21,7 @@ class LLMBackend(ABC):
 class OllamaBackend(LLMBackend):
     """Local LLM via Ollama"""
     
-    def __init__(self, model: str = "llama3.1:8b-instruct", base_url: str = "http://localhost:11434"):
+    def __init__(self, model: str = "mistral:7b", base_url: str = "http://localhost:11434"):
         self.model = model
         self.base_url = base_url
         logger.info(f"Initialized Ollama backend with model: {model}")
