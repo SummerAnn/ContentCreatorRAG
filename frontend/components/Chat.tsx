@@ -236,6 +236,8 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
       };
       const endpoint = endpointMap[contentType] || contentType;
 
+      console.log(`[DEBUG] Starting generation request to ${apiUrl}/api/generate/${endpoint}`);
+      
       const response = await fetch(`${apiUrl}/api/generate/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -261,9 +263,19 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
 
       clearTimeout(timeoutId);
 
+      console.log(`[DEBUG] Response status: ${response.status} ${response.statusText}`);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text().catch(() => 'No error details');
+        console.error(`[DEBUG] HTTP error: ${response.status} - ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
+      
+      if (!response.body) {
+        throw new Error('Response body is null - backend may not be streaming properly');
+      }
+      
+      console.log(`[DEBUG] Starting to read stream...`);
 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
@@ -272,6 +284,7 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
       let firstChunkReceived = false;
       const CHUNK_TIMEOUT = 90000; // 90 seconds max between chunks (LLM can be very slow)
       let statusMessage = 'Initializing...';
+      let chunkCount = 0;
 
       if (reader) {
         while (true) {
@@ -291,11 +304,17 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6));
+                chunkCount++;
+                
+                if (chunkCount === 1) {
+                  console.log(`[DEBUG] First chunk received:`, data);
+                }
                 
                 // Handle status updates (reset timeout since we got data)
                 if (data.status || data.message) {
                   lastChunkTime = Date.now(); // Reset timeout on status updates
                   statusMessage = data.message || data.status;
+                  console.log(`[DEBUG] Status update: ${statusMessage}`);
                   setCurrentGeneration({ 
                     type: contentType, 
                     content: fullContent || statusMessage 
@@ -308,6 +327,14 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
                   lastChunkTime = Date.now(); // Reset timeout on each chunk
                   fullContent += data.chunk;
                   setCurrentGeneration({ type: contentType, content: fullContent });
+                  if (chunkCount <= 5) {
+                    console.log(`[DEBUG] Content chunk ${chunkCount}:`, data.chunk.substring(0, 50));
+                  }
+                }
+                
+                if (data.error) {
+                  console.error(`[DEBUG] Error from backend:`, data.error);
+                  throw new Error(data.error);
                 }
                 if (data.done) {
       // Add assistant message when done

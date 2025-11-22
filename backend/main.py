@@ -44,14 +44,29 @@ async def lifespan(app: FastAPI):
             base_url=settings.OLLAMA_URL
         )
         
-        # Test LLM connection
+        # Test LLM connection (non-blocking, with timeout)
+        async def test_llm():
+            try:
+                import asyncio
+                test_response = await asyncio.wait_for(
+                    asyncio.to_thread(
+                        llm_backend.generate,
+                        [{"role": "user", "content": "Say 'ready'"}]
+                    ),
+                    timeout=10.0  # 10 second max for test
+                )
+                logger.info(f"✅ LLM test: {test_response[:50]}")
+            except asyncio.TimeoutError:
+                logger.warning("⚠️ LLM test timed out - Ollama may be slow, but continuing...")
+            except Exception as e:
+                logger.warning(f"⚠️ LLM test failed (may need to start Ollama): {e}")
+        
+        # Run test in background, don't block startup
         try:
-            test_response = llm_backend.generate([
-                {"role": "user", "content": "Say 'ready' if you're working"}
-            ])
-            logger.info(f"✅ LLM test: {test_response[:50]}")
-        except Exception as e:
-            logger.warning(f"⚠️ LLM test failed (may need to start Ollama): {e}")
+            import asyncio
+            asyncio.create_task(test_llm())
+        except Exception:
+            pass  # Don't fail startup if async task creation fails
         
         # Inject globals into routers after initialization
         generate.set_globals(embedding_engine, vector_store, llm_backend)
