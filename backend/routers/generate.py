@@ -6,6 +6,7 @@ import json
 import logging
 import asyncio
 from pathlib import Path
+import errno
 
 # Import will be injected at runtime
 embedding_engine = None
@@ -302,10 +303,24 @@ async def generate_script(req: GenerateRequest):
                     base_messages[1] if len(base_messages) > 1 else {"role": "user", "content": ""}
                 ]
                 
-                # Generate
-                for chunk in llm_backend.generate_stream(messages, temperature=temperature):
-                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-                yield f"data: {json.dumps({'done': True})}\n\n"
+                # Generate with error handling for broken pipes
+                try:
+                    for chunk in llm_backend.generate_stream(messages, temperature=temperature):
+                        try:
+                            yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+                        except (BrokenPipeError, ConnectionError, OSError) as e:
+                            logger.warning(f"Client disconnected during streaming: {e}")
+                            break
+                    yield f"data: {json.dumps({'done': True})}\n\n"
+                except (BrokenPipeError, ConnectionError, OSError) as e:
+                    logger.warning(f"Connection broken during generation: {e}")
+                    return
+                except Exception as e:
+                    logger.error(f"Generation error: {e}")
+                    try:
+                        yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                    except (BrokenPipeError, ConnectionError, OSError):
+                        pass
             except Exception as e:
                 logger.error(f"Generation error: {e}")
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
