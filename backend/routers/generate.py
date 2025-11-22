@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 import json
 import logging
 import asyncio
+from pathlib import Path
 
 # Import will be injected at runtime
 embedding_engine = None
@@ -25,6 +26,88 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/generate", tags=["generate"])
 
+# Agent file path (shared with agents.py)
+AGENTS_FILE = "data/agents.json"
+
+def load_agent(agent_id: str) -> Optional[Dict]:
+    """Load a specific agent by ID"""
+    if not Path(AGENTS_FILE).exists():
+        return None
+    try:
+        with open(AGENTS_FILE, 'r') as f:
+            agents = json.load(f)
+            return next((a for a in agents if a.get('id') == agent_id), None)
+    except Exception as e:
+        logger.error(f"Error loading agent {agent_id}: {e}")
+        return None
+
+def get_agent_for_content_type(content_type: str, agent_id: Optional[str] = None) -> Optional[Dict]:
+    """
+    Get agent for content generation.
+    If agent_id provided, load that agent.
+    Otherwise, tries to find an agent matching the content type.
+    """
+    if not agent_id:
+        return None
+    
+    agent = load_agent(agent_id)
+    if not agent:
+        logger.warning(f"Agent {agent_id} not found")
+        return None
+    
+    # Map content types to agent capabilities
+    content_type_to_capabilities = {
+        "hooks": ["hook_creation", "pattern_interrupts", "psychology_application"],
+        "script": ["script_writing", "retention_optimization", "visual_direction", "pacing"],
+        "shotlist": ["visual_direction", "pacing"],
+        "music": [],  # No specific agent for music
+        "titles": ["seo_optimization", "keyword_strategy"],
+        "description": ["caption_writing", "copy_optimization", "engagement_writing"],
+        "tags": ["hashtag_research", "seo_optimization", "keyword_strategy", "discoverability"],
+        "thumbnails": ["thumbnail_design", "ctr_optimization", "visual_strategy"],
+        "beatmap": ["retention_optimization", "pacing"],
+        "cta": ["cta_creation", "copy_optimization", "engagement_writing"],
+        "tools": []  # No specific agent for tools
+    }
+    
+    # Check if agent has relevant capabilities (optional validation)
+    required_caps = content_type_to_capabilities.get(content_type, [])
+    agent_caps = agent.get("capabilities", [])
+    
+    # If agent has no matching capabilities but was explicitly requested, still use it
+    if required_caps and not any(cap in agent_caps for cap in required_caps):
+        logger.info(f"Agent {agent_id} capabilities don't match {content_type}, but using it anyway")
+    
+    return agent
+
+def apply_agent_to_messages(
+    messages: List[Dict],
+    agent: Optional[Dict],
+    default_system_prompt: str,
+    default_temperature: float = 0.8
+) -> tuple[List[Dict], float]:
+    """
+    Apply agent's system prompt and temperature to messages.
+    Returns (updated_messages, temperature)
+    """
+    system_prompt = default_system_prompt
+    temperature = default_temperature
+    
+    if agent:
+        agent_system_prompt = agent.get("system_prompt")
+        if agent_system_prompt:
+            system_prompt = agent_system_prompt
+            logger.info(f"Using agent '{agent.get('name')}' system prompt")
+        temperature = agent.get("temperature", default_temperature)
+    
+    # Replace system prompt in messages
+    updated_messages = [
+        {"role": "system", "content": system_prompt},
+        messages[1] if len(messages) > 1 else {"role": "user", "content": ""}
+    ]
+    
+    return updated_messages, temperature
+
 class GenerateRequest(BaseModel):
     user_id: str = "default_user"  # For MVP, use default
     platform: str
@@ -36,6 +119,7 @@ class GenerateRequest(BaseModel):
     reference_image: Optional[str] = None
     content_type: str  # "hooks", "script", "shotlist", "music"
     options: dict = {}
+    agent_id: Optional[str] = None  # NEW: Agent to use for generation
 
 @router.post("/hooks")
 async def generate_hooks(req: GenerateRequest):
@@ -104,8 +188,24 @@ async def generate_hooks(req: GenerateRequest):
                 
                 yield f"data: {json.dumps({'status': 'generating', 'message': 'Generating hooks with AI...'})}\n\n"
                 
+                # Load agent if provided
+                agent = get_agent_for_content_type("hooks", req.agent_id)
+                system_prompt = hooks.HOOK_SYSTEM_PROMPT  # Default generic prompt
+                temperature = 0.95  # Default temperature
+                max_tokens = None  # Use default
+                
+                if agent:
+                    agent_system_prompt = agent.get("system_prompt")
+                    if agent_system_prompt:
+                        system_prompt = agent_system_prompt
+                        logger.info(f"Using agent '{agent.get('name')}' system prompt for hooks generation")
+                    temperature = agent.get("temperature", 0.95)
+                    max_tokens = agent.get("max_tokens")
+                    agent_name = agent.get("name", "agent")
+                    yield f"data: {json.dumps({'status': 'agent', 'message': f'Using {agent_name} agent...'})}\n\n"
+                
                 # Build prompt with RAG context and trends
-                messages = hooks.build_hook_prompt(
+                base_messages = hooks.build_hook_prompt(
                     platform=req.platform,
                     niche=req.niche,
                     goal=req.goal,
@@ -116,8 +216,14 @@ async def generate_hooks(req: GenerateRequest):
                     trends=trends_text
                 )
                 
+                # Replace system prompt with agent's prompt if available
+                messages = [
+                    {"role": "system", "content": system_prompt},
+                    base_messages[1] if len(base_messages) > 1 else {"role": "user", "content": ""}
+                ]
+                
                 # Generate with streaming
-                for chunk in llm_backend.generate_stream(messages, temperature=0.95):
+                for chunk in llm_backend.generate_stream(messages, temperature=temperature):
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
                 yield f"data: {json.dumps({'done': True})}\n\n"
             except Exception as e:
@@ -162,9 +268,23 @@ async def generate_script(req: GenerateRequest):
                 
                 yield f"data: {json.dumps({'status': 'generating', 'message': 'Generating script with AI...'})}\n\n"
                 
+                # Load agent if provided
+                agent = get_agent_for_content_type("script", req.agent_id)
+                system_prompt = scripts.SCRIPT_SYSTEM_PROMPT
+                temperature = 0.8
+                
+                if agent:
+                    agent_system_prompt = agent.get("system_prompt")
+                    if agent_system_prompt:
+                        system_prompt = agent_system_prompt
+                        logger.info(f"Using agent '{agent.get('name')}' system prompt for script generation")
+                    temperature = agent.get("temperature", 0.8)
+                    agent_name = agent.get("name", "agent")
+                    yield f"data: {json.dumps({'status': 'agent', 'message': f'Using {agent_name} agent...'})}\n\n"
+                
                 # Build prompt
                 has_voiceover = req.options.get("has_voiceover", True)
-                messages = scripts.build_script_prompt(
+                base_messages = scripts.build_script_prompt(
                     platform=req.platform,
                     niche=req.niche,
                     duration=req.options.get("duration", 60),
@@ -176,8 +296,14 @@ async def generate_script(req: GenerateRequest):
                     has_voiceover=has_voiceover
                 )
                 
+                # Replace system prompt with agent's prompt if available
+                messages = [
+                    {"role": "system", "content": system_prompt},
+                    base_messages[1] if len(base_messages) > 1 else {"role": "user", "content": ""}
+                ]
+                
                 # Generate
-                for chunk in llm_backend.generate_stream(messages, temperature=0.8):
+                for chunk in llm_backend.generate_stream(messages, temperature=temperature):
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
                 yield f"data: {json.dumps({'done': True})}\n\n"
             except Exception as e:
@@ -270,7 +396,9 @@ async def generate_titles(req: GenerateRequest):
             top_k=5
         )
         
-        messages = titles.build_title_prompt(
+        # Load agent if provided
+        agent = get_agent_for_content_type("titles", req.agent_id)
+        base_messages = titles.build_title_prompt(
             platform=req.platform,
             niche=req.niche,
             hook=req.options.get("hook", ""),
@@ -279,9 +407,19 @@ async def generate_titles(req: GenerateRequest):
             rag_examples=rag_results
         )
         
+        messages, temperature = apply_agent_to_messages(
+            base_messages,
+            agent,
+            titles.TITLE_SYSTEM_PROMPT,
+            default_temperature=0.9
+        )
+        
         async def stream_response():
             try:
-                for chunk in llm_backend.generate_stream(messages, temperature=0.9):
+                if agent:
+                    agent_name = agent.get("name", "agent")
+                    yield f"data: {json.dumps({'status': 'agent', 'message': f'Using {agent_name} agent...'})}\n\n"
+                for chunk in llm_backend.generate_stream(messages, temperature=temperature):
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
                 yield f"data: {json.dumps({'done': True})}\n\n"
             except Exception as e:
@@ -302,7 +440,9 @@ async def generate_description(req: GenerateRequest):
         raise HTTPException(status_code=503, detail="Backend not fully initialized")
     
     try:
-        messages = descriptions.build_description_prompt(
+        # Load agent if provided
+        agent = get_agent_for_content_type("description", req.agent_id)
+        base_messages = descriptions.build_description_prompt(
             platform=req.platform,
             niche=req.niche,
             title=req.options.get("title", ""),
@@ -310,9 +450,19 @@ async def generate_description(req: GenerateRequest):
             reference=req.reference_text or ""
         )
         
+        messages, temperature = apply_agent_to_messages(
+            base_messages,
+            agent,
+            descriptions.DESCRIPTION_SYSTEM_PROMPT,
+            default_temperature=0.8
+        )
+        
         async def stream_response():
             try:
-                for chunk in llm_backend.generate_stream(messages, temperature=0.8):
+                if agent:
+                    agent_name = agent.get("name", "agent")
+                    yield f"data: {json.dumps({'status': 'agent', 'message': f'Using {agent_name} agent...'})}\n\n"
+                for chunk in llm_backend.generate_stream(messages, temperature=temperature):
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
                 yield f"data: {json.dumps({'done': True})}\n\n"
             except Exception as e:
@@ -343,11 +493,14 @@ async def generate_tags(req: GenerateRequest):
             top_k=5
         )
         
+        # Load agent if provided
+        agent = get_agent_for_content_type("tags", req.agent_id)
+        
         # Use strategic tags if requested, otherwise basic tags
         use_strategic = req.options.get("strategic", True)
         
         if use_strategic:
-            messages = strategic_tags.build_strategic_tags_prompt(
+            base_messages = strategic_tags.build_strategic_tags_prompt(
                 platform=req.platform,
                 niche=req.niche,
                 title=req.options.get("title", ""),
@@ -355,18 +508,30 @@ async def generate_tags(req: GenerateRequest):
                 goal=req.goal,
                 rag_examples=rag_results
             )
+            default_system_prompt = strategic_tags.STRATEGIC_TAGS_SYSTEM_PROMPT if hasattr(strategic_tags, 'STRATEGIC_TAGS_SYSTEM_PROMPT') else tags.TAGS_SYSTEM_PROMPT
         else:
-            messages = tags.build_tags_prompt(
+            base_messages = tags.build_tags_prompt(
                 platform=req.platform,
                 niche=req.niche,
                 title=req.options.get("title", ""),
                 reference=req.reference_text or "",
                 rag_examples=rag_results
             )
+            default_system_prompt = tags.TAGS_SYSTEM_PROMPT
+        
+        messages, temperature = apply_agent_to_messages(
+            base_messages,
+            agent,
+            default_system_prompt,
+            default_temperature=0.85
+        )
         
         async def stream_response():
             try:
-                for chunk in llm_backend.generate_stream(messages, temperature=0.85):
+                if agent:
+                    agent_name = agent.get("name", "agent")
+                    yield f"data: {json.dumps({'status': 'agent', 'message': f'Using {agent_name} agent...'})}\n\n"
+                for chunk in llm_backend.generate_stream(messages, temperature=temperature):
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
                 yield f"data: {json.dumps({'done': True})}\n\n"
             except Exception as e:
@@ -387,7 +552,9 @@ async def generate_thumbnails(req: GenerateRequest):
         raise HTTPException(status_code=503, detail="Backend not fully initialized")
     
     try:
-        messages = thumbnails.build_thumbnail_prompt(
+        # Load agent if provided
+        agent = get_agent_for_content_type("thumbnails", req.agent_id)
+        base_messages = thumbnails.build_thumbnail_prompt(
             platform=req.platform,
             niche=req.niche,
             title=req.options.get("title", ""),
@@ -395,9 +562,19 @@ async def generate_thumbnails(req: GenerateRequest):
             reference=req.reference_text or ""
         )
         
+        messages, temperature = apply_agent_to_messages(
+            base_messages,
+            agent,
+            thumbnails.THUMBNAIL_SYSTEM_PROMPT,
+            default_temperature=0.8
+        )
+        
         async def stream_response():
             try:
-                for chunk in llm_backend.generate_stream(messages, temperature=0.8):
+                if agent:
+                    agent_name = agent.get("name", "agent")
+                    yield f"data: {json.dumps({'status': 'agent', 'message': f'Using {agent_name} agent...'})}\n\n"
+                for chunk in llm_backend.generate_stream(messages, temperature=temperature):
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
                 yield f"data: {json.dumps({'done': True})}\n\n"
             except Exception as e:
@@ -418,16 +595,28 @@ async def generate_beatmap(req: GenerateRequest):
         raise HTTPException(status_code=503, detail="Backend not fully initialized")
     
     try:
-        messages = beatmap.build_beatmap_prompt(
+        # Load agent if provided
+        agent = get_agent_for_content_type("beatmap", req.agent_id)
+        base_messages = beatmap.build_beatmap_prompt(
             platform=req.platform,
             duration=req.options.get("duration", 60),
             script=req.options.get("script", ""),
             hook=req.options.get("hook", "")
         )
         
+        messages, temperature = apply_agent_to_messages(
+            base_messages,
+            agent,
+            beatmap.BEATMAP_SYSTEM_PROMPT,
+            default_temperature=0.7
+        )
+        
         async def stream_response():
             try:
-                for chunk in llm_backend.generate_stream(messages, temperature=0.7):
+                if agent:
+                    agent_name = agent.get("name", "agent")
+                    yield f"data: {json.dumps({'status': 'agent', 'message': f'Using {agent_name} agent...'})}\n\n"
+                for chunk in llm_backend.generate_stream(messages, temperature=temperature):
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
                 yield f"data: {json.dumps({'done': True})}\n\n"
             except Exception as e:
@@ -448,16 +637,28 @@ async def generate_cta(req: GenerateRequest):
         raise HTTPException(status_code=503, detail="Backend not fully initialized")
     
     try:
-        messages = cta.build_cta_prompt(
+        # Load agent if provided
+        agent = get_agent_for_content_type("cta", req.agent_id)
+        base_messages = cta.build_cta_prompt(
             platform=req.platform,
             niche=req.niche,
             script=req.options.get("script", ""),
             tone=req.options.get("tone", "conversational")
         )
         
+        messages, temperature = apply_agent_to_messages(
+            base_messages,
+            agent,
+            cta.CTA_SYSTEM_PROMPT,
+            default_temperature=0.85
+        )
+        
         async def stream_response():
             try:
-                for chunk in llm_backend.generate_stream(messages, temperature=0.85):
+                if agent:
+                    agent_name = agent.get("name", "agent")
+                    yield f"data: {json.dumps({'status': 'agent', 'message': f'Using {agent_name} agent...'})}\n\n"
+                for chunk in llm_backend.generate_stream(messages, temperature=temperature):
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
                 yield f"data: {json.dumps({'done': True})}\n\n"
             except Exception as e:
