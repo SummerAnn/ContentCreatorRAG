@@ -19,49 +19,85 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
-  // Remove data-has-listeners attribute after mount (added by browser extensions)
+  // Remove data-has-listeners attribute immediately and continuously
   useEffect(() => {
     const removeExtensionAttributes = () => {
       // Remove from this specific input
-      if (inputRef.current && inputRef.current.hasAttribute('data-has-listeners')) {
+      if (inputRef.current) {
         inputRef.current.removeAttribute('data-has-listeners');
+        // Also remove any other extension attributes
+        Array.from(inputRef.current.attributes).forEach(attr => {
+          if (attr.name.startsWith('data-') && (attr.name.includes('listener') || attr.name.includes('extension'))) {
+            inputRef.current?.removeAttribute(attr.name);
+          }
+        });
       }
       // Also check link input
       const linkInput = document.querySelector('input[type="url"]');
-      if (linkInput && linkInput.hasAttribute('data-has-listeners')) {
+      if (linkInput) {
         linkInput.removeAttribute('data-has-listeners');
+        Array.from(linkInput.attributes).forEach(attr => {
+          if (attr.name.startsWith('data-') && (attr.name.includes('listener') || attr.name.includes('extension'))) {
+            linkInput.removeAttribute(attr.name);
+          }
+        });
       }
     };
     
-    // Run multiple times to catch attributes added at different times
+    // Run immediately and multiple times to catch attributes added at different times
+    removeExtensionAttributes();
     const intervals: NodeJS.Timeout[] = [];
-    [0, 50, 100, 200, 500, 1000, 2000].forEach(delay => {
+    [10, 50, 100, 200, 500, 1000, 2000, 3000].forEach(delay => {
       intervals.push(setTimeout(removeExtensionAttributes, delay));
     });
     
-    // Also use MutationObserver to catch attributes added dynamically
+    // Use MutationObserver to catch attributes added dynamically - observe both attribute changes and subtree
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'data-has-listeners') {
+        if (mutation.type === 'attributes' && mutation.attributeName?.includes('listener')) {
           const target = mutation.target as HTMLElement;
-          if (target.hasAttribute('data-has-listeners')) {
-            target.removeAttribute('data-has-listeners');
-          }
+          target.removeAttribute('data-has-listeners');
+          Array.from(target.attributes).forEach(attr => {
+            if (attr.name.startsWith('data-') && (attr.name.includes('listener') || attr.name.includes('extension'))) {
+              target.removeAttribute(attr.name);
+            }
+          });
         }
+        // Also check added nodes
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const el = node as HTMLElement;
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+              el.removeAttribute('data-has-listeners');
+            }
+            // Check children
+            el.querySelectorAll?.('input, textarea').forEach((input: Element) => {
+              input.removeAttribute('data-has-listeners');
+            });
+          }
+        });
       });
     });
     
-    // Observe the input for attribute changes
+    // Observe the input and its parent for attribute changes
     if (inputRef.current) {
       observer.observe(inputRef.current, {
         attributes: true,
         attributeFilter: ['data-has-listeners'],
         attributeOldValue: false
       });
+      // Also observe parent container
+      if (inputRef.current.parentElement) {
+        observer.observe(inputRef.current.parentElement, {
+          attributes: false,
+          childList: true,
+          subtree: true
+        });
+      }
     }
     
-    // Also set up interval to check periodically
-    const intervalId = setInterval(removeExtensionAttributes, 1000);
+    // Aggressive interval to check periodically
+    const intervalId = setInterval(removeExtensionAttributes, 500);
     
     return () => {
       intervals.forEach(id => clearTimeout(id));

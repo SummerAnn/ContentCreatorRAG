@@ -86,7 +86,7 @@ if (typeof window !== 'undefined') {
   // Also periodically remove attributes as a backup
   const intervalId = setInterval(removeAttributesImmediately, 500);
   
-  // Suppress console errors and warnings
+  // Suppress console errors and warnings - MORE AGGRESSIVE
   const originalError = console.error.bind(console);
   console.error = function(...args: any[]) {
     // Check all arguments more thoroughly
@@ -102,22 +102,45 @@ if (typeof window !== 'undefined') {
       return String(a);
     }).join(' ').toLowerCase();
     
-    // More comprehensive pattern matching
+    // More comprehensive pattern matching - catch ALL variations
     const isHydrationWarning = 
       msg.includes('extra attributes from the server') ||
+      msg.includes('extra attributes') && msg.includes('server') ||
       msg.includes('data-has-listeners') ||
       (msg.includes('hydration') && (msg.includes('warning') || msg.includes('error'))) ||
-      (msg.includes('at input') && (msg.includes('at div') || msg.includes('referenceinput'))) ||
+      (msg.includes('at input') && msg.includes('referenceinput')) ||
+      (msg.includes('at div') && msg.includes('referenceinput')) ||
       msg.includes('download the react devtools') ||
       msg.includes('warnforextraattributes') ||
       msg.includes('warn for extra attributes') ||
-      (msg.includes('referenceinput') && msg.includes('data-has-listeners')) ||
-      (msg.includes('extra attributes') && msg.includes('reference'));
+      msg.includes('warnforextra') ||
+      (msg.includes('referenceinput') && (msg.includes('data-has') || msg.includes('attributes'))) ||
+      (msg.includes('reference') && msg.includes('data-has')) ||
+      (msg.includes('diffhydratedproperties')) ||
+      (msg.includes('warnforextra') && msg.includes('input')) ||
+      msg.includes('react-dom.development.js') && msg.includes('extra attributes');
     
     if (isHydrationWarning) {
       return; // Suppress hydration warnings silently
     }
     originalError.apply(console, args);
+  };
+  
+  // Also intercept window.onerror for React hydration errors
+  const originalWindowError = window.onerror;
+  window.onerror = function(message, source, lineno, colno, error) {
+    const msg = String(message || '').toLowerCase();
+    if (
+      msg.includes('extra attributes') ||
+      msg.includes('data-has-listeners') ||
+      (msg.includes('hydration') && msg.includes('warning'))
+    ) {
+      return true; // Suppress
+    }
+    if (originalWindowError) {
+      return originalWindowError.call(window, message, source, lineno, colno, error);
+    }
+    return false;
   };
   
   const originalWarn = console.warn.bind(console);
