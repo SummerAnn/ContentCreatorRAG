@@ -214,11 +214,11 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
     };
     setMessages(prev => [...prev, userMessage]);
 
-    // Add abort controller for timeout
+    // Add abort controller for timeout (increased to 5 minutes for slow LLMs)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 120000); // 2 minute timeout for AI generation
+    }, 300000); // 5 minute timeout for AI generation (local LLMs can be slow)
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -269,14 +269,15 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
       const decoder = new TextDecoder();
       let fullContent = '';
       let lastChunkTime = Date.now();
-      const CHUNK_TIMEOUT = 60000; // 60 seconds max between chunks (LLM can be slow)
+      let firstChunkReceived = false;
+      const CHUNK_TIMEOUT = 90000; // 90 seconds max between chunks (LLM can be very slow)
       let statusMessage = 'Initializing...';
 
       if (reader) {
         while (true) {
-          // Check for timeout between chunks
-          if (Date.now() - lastChunkTime > CHUNK_TIMEOUT) {
-            throw new Error('Stream timeout: No data received for 60 seconds');
+          // Check for timeout between chunks (only after first chunk received)
+          if (firstChunkReceived && Date.now() - lastChunkTime > CHUNK_TIMEOUT) {
+            throw new Error('Stream timeout: No data received for 90 seconds');
           }
 
           const { done, value } = await reader.read();
@@ -291,8 +292,9 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
               try {
                 const data = JSON.parse(line.slice(6));
                 
-                // Handle status updates
+                // Handle status updates (reset timeout since we got data)
                 if (data.status || data.message) {
+                  lastChunkTime = Date.now(); // Reset timeout on status updates
                   statusMessage = data.message || data.status;
                   setCurrentGeneration({ 
                     type: contentType, 
@@ -302,6 +304,8 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
                 }
                 
                 if (data.chunk) {
+                  firstChunkReceived = true;
+                  lastChunkTime = Date.now(); // Reset timeout on each chunk
                   fullContent += data.chunk;
                   setCurrentGeneration({ type: contentType, content: fullContent });
                 }
@@ -347,7 +351,7 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
       
       let errorMsg = `Error generating ${contentType}. `;
       if (error.name === 'AbortError') {
-        errorMsg += 'Request timed out after 2 minutes. The backend may be slow or unresponsive. Please try again.';
+        errorMsg += 'Request timed out after 5 minutes. The LLM may be very slow. Check if Ollama is running and the model is loaded.';
       } else if (error.message?.includes('timeout') || error.message?.includes('Stream timeout')) {
         errorMsg += 'The request took too long. Please try again or check your backend connection.';
       } else if (error.message?.includes('Failed to fetch')) {
