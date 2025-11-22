@@ -53,6 +53,34 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
   const [showSettings, setShowSettings] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Load user profile defaults on mount (before other effects)
+  useEffect(() => {
+    const loadProfileDefaults = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiUrl}/api/profile/${userId}/defaults`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.has_profile && data.defaults) {
+            // Auto-fill with profile defaults if fields are empty (only if not set by initial props)
+            if (!initialAgent && !initialConversation && !initialIdea) {
+              if (data.defaults.platform) setPlatform(data.defaults.platform);
+              if (data.defaults.niche) setNiche(data.defaults.niche);
+              if (data.defaults.goal) setGoal(data.defaults.goal);
+              if (data.defaults.personality) setPersonality(data.defaults.personality);
+              if (data.defaults.audience.length > 0) setAudience(data.defaults.audience);
+              if (data.defaults.has_voiceover !== undefined) setHasVoiceover(data.defaults.has_voiceover);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load profile defaults:', error);
+      }
+    };
+    
+    loadProfileDefaults();
+  }, [userId]); // Only run once on mount
+  
   // Update when agent, conversation, or idea changes
   useEffect(() => {
     if (initialConversation) {
@@ -167,8 +195,8 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
       const response = await fetch(`${apiUrl}/api/generate/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: 'default_user',
+          body: JSON.stringify({
+          user_id: userId,
           platform,
           niche,
           goal,
@@ -836,14 +864,15 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
       <SettingsPanel
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
-        platform={platform}
-        niche={niche}
-        goal={goal}
-        personality={personality}
-        audience={audience}
-        reference={reference}
-        hasVoiceover={hasVoiceover}
-        onSave={(settings) => {
+              platform={platform}
+              niche={niche}
+              goal={goal}
+              personality={personality}
+              audience={audience}
+              reference={reference}
+              hasVoiceover={hasVoiceover}
+              userId={userId}
+              onSave={(settings) => {
           setPlatform(settings.platform);
           setNiche(settings.niche);
           setGoal(settings.goal);

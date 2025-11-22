@@ -17,6 +17,7 @@ interface SettingsPanelProps {
   audience: string[];
   reference: string;
   hasVoiceover: boolean;
+  userId?: string;
   onSave: (settings: {
     platform: string;
     niche: string;
@@ -53,6 +54,7 @@ export default function SettingsPanel({
   audience: initialAudience,
   reference: initialReference,
   hasVoiceover: initialHasVoiceover,
+  userId = 'default_user',
   onSave,
   onRegenerate
 }: SettingsPanelProps) {
@@ -64,7 +66,28 @@ export default function SettingsPanel({
   const [reference, setReference] = useState(initialReference);
   const [hasVoiceover, setHasVoiceover] = useState(initialHasVoiceover);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Save to backend profile (async, non-blocking)
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      await fetch(`${apiUrl}/api/profile/save-settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          platform,
+          niche,
+          goal,
+          personality,
+          audience,
+          has_voiceover: hasVoiceover
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+      // Don't block save if profile save fails
+    }
+    
     onSave({
       platform,
       niche,
@@ -98,7 +121,7 @@ export default function SettingsPanel({
             <Settings className="w-6 h-6 text-[var(--accent)]" />
             <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Content Settings</h2>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              Adjust your settings to refine content generation
+              Adjust your settings - these will be saved as your defaults
             </span>
           </div>
           <button 
