@@ -231,35 +231,35 @@ export default function SettingsPage() {
     }
   };
 
-  // Show loading for max 2 seconds, then show UI with default profile
+  // Show loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[var(--background)]">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-[var(--accent)] mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">Loading settings...</p>
-          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">If this takes too long, the page will load with defaults</p>
         </div>
       </div>
     );
   }
 
-  // If no profile after loading, create default one
+  // If no profile after loading, create default one (shouldn't happen due to error handling)
   if (!profile) {
-    const userId = localStorage.getItem('user_id') || 'default_user';
-    setProfile({
-      user_id: userId,
-      primary_platforms: [],
-      secondary_platforms: [],
-      primary_niches: [],
-      personality_traits: [],
-      primary_goals: [],
-      avoid_topics: [],
-      target_audience: {},
-      brand_voice: {},
-      profile_completed: false
-    });
-    return null; // Will re-render with profile
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[var(--background)]">
+        <div className="text-center bg-white dark:bg-[#1a1a1a] rounded-lg shadow-xl p-8 max-w-md">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-200">Loading Error</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Unable to load profile. Please refresh the page.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 luxury-accent text-white rounded-lg hover:opacity-90"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const platforms = [
