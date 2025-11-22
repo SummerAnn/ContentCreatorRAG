@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 import json
 import logging
+import asyncio
 
 # Import will be injected at runtime
 embedding_engine = None
@@ -61,7 +62,6 @@ async def generate_hooks(req: GenerateRequest):
                 # RAG retrieval - limit to 3 for speed, timeout quickly
                 rag_results = []
                 try:
-                    import asyncio
                     rag_results = await asyncio.wait_for(
                         asyncio.to_thread(
                             rag.retrieve_context,
@@ -85,7 +85,6 @@ async def generate_hooks(req: GenerateRequest):
                 trends_text = ""
                 try:
                     # Try to get trends, but timeout quickly if Reddit is slow
-                    import asyncio
                     trends = await asyncio.wait_for(
                         asyncio.to_thread(
                             trend_service.get_trends,
