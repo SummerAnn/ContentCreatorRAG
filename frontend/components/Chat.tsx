@@ -1062,6 +1062,54 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
           }
         }}
       />
+
+      {/* Cute Niche Popup Modal */}
+      {showNichePopup && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setShowNichePopup(false)}
+        >
+          <div 
+            className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 max-w-md w-full mx-4 luxury-shadow-xl border luxury-border animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center luxury-shadow-lg">
+                <AlertCircle className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-bold text-[var(--foreground)]">Almost there!</h3>
+                  <button
+                    onClick={() => setShowNichePopup(false)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+                  Please select a niche before generating content. The niche helps us create more targeted and relevant content for your audience.
+                </p>
+                <button
+                  onClick={() => {
+                    setShowNichePopup(false);
+                    setTimeout(() => {
+                      const nicheInput = document.querySelector('input[placeholder*="niche"], input[placeholder*="Niche"]') as HTMLInputElement;
+                      if (nicheInput) {
+                        nicheInput.focus();
+                        nicheInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }
+                    }, 100);
+                  }}
+                  className="w-full px-4 py-2.5 luxury-accent hover:opacity-90 text-white rounded-lg font-medium transition-all luxury-shadow-lg hover:shadow-xl"
+                >
+                  Got it!
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
