@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Settings, RefreshCw } from 'lucide-react';
+import { X, Settings, RefreshCw, CheckCircle2 } from 'lucide-react';
 import PlatformSelector from './PlatformSelector';
 import PersonalitySelector from './PersonalitySelector';
 import AudienceSelector from './AudienceSelector';
@@ -65,12 +65,17 @@ export default function SettingsPanel({
   const [audience, setAudience] = useState(initialAudience);
   const [reference, setReference] = useState(initialReference);
   const [hasVoiceover, setHasVoiceover] = useState(initialHasVoiceover);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
 
   const handleSave = async () => {
+    setIsSavingProfile(true);
+    setProfileSaved(false);
+    
     // Save to backend profile (async, non-blocking)
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      await fetch(`${apiUrl}/api/profile/save-settings`, {
+      const response = await fetch(`${apiUrl}/api/profile/save-settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -83,9 +88,17 @@ export default function SettingsPanel({
           has_voiceover: hasVoiceover
         }),
       });
+      
+      if (response.ok) {
+        setProfileSaved(true);
+        // Clear success message after 2 seconds
+        setTimeout(() => setProfileSaved(false), 2000);
+      }
     } catch (error) {
       console.error('Failed to save profile:', error);
       // Don't block save if profile save fails
+    } finally {
+      setIsSavingProfile(false);
     }
     
     onSave({
@@ -119,10 +132,24 @@ export default function SettingsPanel({
         <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-3">
             <Settings className="w-6 h-6 text-[var(--accent)]" />
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Content Settings</h2>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Adjust your settings - these will be saved as your defaults
-            </span>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Content Settings</h2>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Adjust your settings - these will be saved as your defaults
+              </span>
+            </div>
+            {profileSaved && (
+              <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-sm">
+                <CheckCircle2 className="w-5 h-5" />
+                <span>Saved to profile!</span>
+              </div>
+            )}
+            {isSavingProfile && (
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
+                <RefreshCw className="w-5 h-5 animate-spin" />
+                <span>Saving...</span>
+              </div>
+            )}
           </div>
           <button 
             onClick={onClose} 
@@ -134,6 +161,20 @@ export default function SettingsPanel({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Profile Info Banner */}
+          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <Settings className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">
+                  Profile Settings
+                </h3>
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  When you save these settings, they become your defaults. The next time you open the app, these values will auto-fill so you don't have to enter them again.
+                </p>
+              </div>
+            </div>
+          </div>
           {/* Platform */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -246,9 +287,17 @@ export default function SettingsPanel({
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 px-6 py-3 bg-[var(--accent)] text-white rounded-lg hover:opacity-90 transition luxury-shadow"
+            disabled={isSavingProfile}
+            className="flex-1 px-6 py-3 bg-[var(--accent)] text-white rounded-lg hover:opacity-90 transition luxury-shadow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Save Settings
+            {isSavingProfile ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Settings'
+            )}
           </button>
           {onRegenerate && (
             <button

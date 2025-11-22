@@ -77,12 +77,36 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
           if (data.has_profile && data.defaults) {
             // Auto-fill with profile defaults if fields are empty (only if not set by initial props)
             if (!initialAgent && !initialConversation && !initialIdea) {
-              if (data.defaults.platform) setPlatform(data.defaults.platform);
-              if (data.defaults.niche) setNiche(data.defaults.niche);
-              if (data.defaults.goal) setGoal(data.defaults.goal);
-              if (data.defaults.personality) setPersonality(data.defaults.personality);
-              if (data.defaults.audience.length > 0) setAudience(data.defaults.audience);
-              if (data.defaults.has_voiceover !== undefined) setHasVoiceover(data.defaults.has_voiceover);
+              let defaultsLoaded = false;
+              if (data.defaults.platform && !platform) {
+                setPlatform(data.defaults.platform);
+                defaultsLoaded = true;
+              }
+              if (data.defaults.niche && !niche) {
+                setNiche(data.defaults.niche);
+                defaultsLoaded = true;
+              }
+              if (data.defaults.goal && !goal) {
+                setGoal(data.defaults.goal);
+                defaultsLoaded = true;
+              }
+              if (data.defaults.personality && !personality) {
+                setPersonality(data.defaults.personality);
+                defaultsLoaded = true;
+              }
+              if (data.defaults.audience.length > 0 && audience.length === 0) {
+                setAudience(data.defaults.audience);
+                defaultsLoaded = true;
+              }
+              if (data.defaults.has_voiceover !== undefined && hasVoiceover === true) {
+                setHasVoiceover(data.defaults.has_voiceover);
+                defaultsLoaded = true;
+              }
+              
+              if (defaultsLoaded) {
+                // Show brief message that defaults were loaded
+                console.log('✅ Profile defaults loaded');
+              }
             }
           }
         }
@@ -92,6 +116,7 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
     };
     
     loadProfileDefaults();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]); // Only run once on mount
   
   // Update when agent, conversation, or idea changes
