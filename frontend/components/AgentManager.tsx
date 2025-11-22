@@ -490,12 +490,12 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
             </>
           ) : (
             <div className="max-w-2xl mx-auto">
-              <h3 className="text-xl font-semibold mb-4">
+              <h3 className="text-xl font-semibold mb-4 text-gray-100">
                 {editingAgent ? 'Edit Agent' : 'Create New Agent'}
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Agent Name *
                   </label>
                   <input
@@ -503,28 +503,28 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., Science & Tech YouTube"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-3 border border-gray-700 bg-[#1a1a1a] text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Platform *
                   </label>
                   <select
                     value={formData.platform}
                     onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-3 border border-gray-700 bg-[#1a1a1a] text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   >
-                    <option value="">Select platform</option>
+                    <option value="" className="bg-[#1a1a1a]">Select platform</option>
                     {platforms.map((p) => (
-                      <option key={p.id} value={p.id}>{p.label}</option>
+                      <option key={p.id} value={p.id} className="bg-[#1a1a1a]">{p.label}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Niche *
                   </label>
                   <input
@@ -532,28 +532,28 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                     value={formData.niche}
                     onChange={(e) => setFormData({ ...formData, niche: e.target.value })}
                     placeholder="e.g., science, tech, horror, travel"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-3 border border-gray-700 bg-[#1a1a1a] text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Goal
                   </label>
                   <select
                     value={formData.goal}
                     onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-3 border border-gray-700 bg-[#1a1a1a] text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   >
-                    <option value="">Select goal</option>
+                    <option value="" className="bg-[#1a1a1a]">Select goal</option>
                     {goals.map((g) => (
-                      <option key={g.id} value={g.id}>{g.label}</option>
+                      <option key={g.id} value={g.id} className="bg-[#1a1a1a]">{g.label}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Description (optional)
                   </label>
                   <textarea
@@ -561,7 +561,7 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="Describe this agent's focus and style..."
                     rows={3}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-3 border border-gray-700 bg-[#1a1a1a] text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   />
                 </div>
 
@@ -584,7 +584,7 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                         console.error('Error updating agent:', error);
                       }
                     } : handleCreate}
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
                   >
                     {editingAgent ? 'Update Agent' : 'Create Agent'}
                   </button>
@@ -594,7 +594,7 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
                       setEditingAgent(null);
                       setFormData({ name: '', platform: '', niche: '', goal: '', description: '' });
                     }}
-                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                    className="px-6 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition border border-gray-700"
                   >
                     Cancel
                   </button>
