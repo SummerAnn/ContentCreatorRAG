@@ -733,14 +733,14 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => generateContent('hooks')}
-                    disabled={!platform || !niche || !personality || !audience || audience.length === 0 || isGenerating}
+                    disabled={isGenerating}
                     className="px-4 py-3 luxury-accent hover:opacity-90 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all text-sm luxury-shadow-lg hover:shadow-xl"
                   >
                     {isGenerating ? '...' : 'Hooks'}
                   </button>
                   <button
                     onClick={() => generateContent('script')}
-                    disabled={!platform || !niche || !personality || !audience || audience.length === 0 || isGenerating}
+                    disabled={isGenerating}
                     className="px-4 py-3 bg-[#1a1a1a] dark:bg-[#1a1a1a] hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all text-sm luxury-shadow"
                   >
                     Script
@@ -750,21 +750,21 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => generateContent('shotlist')}
-                    disabled={!platform || !niche || !personality || !audience || audience.length === 0 || isGenerating}
+                    disabled={isGenerating}
                     className="px-3 py-2 bg-[#1a1a1a] dark:bg-[#1a1a1a] hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-xs transition-all luxury-shadow"
                   >
                     Shots
                   </button>
                   <button
                     onClick={() => generateContent('music')}
-                    disabled={!platform || !niche || !personality || !audience || audience.length === 0 || isGenerating}
+                    disabled={isGenerating}
                     className="px-3 py-2 bg-[#1a1a1a] dark:bg-[#1a1a1a] hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-xs transition-all luxury-shadow"
                   >
                     Music
                   </button>
                   <button
                     onClick={() => generateContent('beatmap')}
-                    disabled={!platform || !niche || !personality || !audience || audience.length === 0 || isGenerating}
+                    disabled={isGenerating}
                     className="px-3 py-2 bg-[#1a1a1a] dark:bg-[#1a1a1a] hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-xs transition-all luxury-shadow"
                   >
                     Beat Map
@@ -774,21 +774,21 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => generateContent('titles')}
-                    disabled={!platform || !niche || !personality || !audience || audience.length === 0 || isGenerating}
+                    disabled={isGenerating}
                     className="px-3 py-2 bg-[#1a1a1a] dark:bg-[#1a1a1a] hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-xs transition-all luxury-shadow"
                   >
                     Titles
                   </button>
                   <button
                     onClick={() => generateContent('description')}
-                    disabled={!platform || !niche || !personality || !audience || audience.length === 0 || isGenerating}
+                    disabled={isGenerating}
                     className="px-3 py-2 bg-[#1a1a1a] dark:bg-[#1a1a1a] hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-xs transition-all luxury-shadow"
                   >
                     Description
                   </button>
                   <button
                     onClick={() => generateContent('tags')}
-                    disabled={!platform || !niche || !personality || !audience || audience.length === 0 || isGenerating}
+                    disabled={isGenerating}
                     className="px-3 py-2 bg-[#1a1a1a] dark:bg-[#1a1a1a] hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-xs transition-all luxury-shadow"
                   >
                     Tags
@@ -798,21 +798,21 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => generateContent('thumbnails')}
-                    disabled={!platform || !niche || !personality || !audience || audience.length === 0 || isGenerating}
+                    disabled={isGenerating}
                     className="px-3 py-2 bg-[#1a1a1a] dark:bg-[#1a1a1a] hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-xs transition-all luxury-shadow"
                   >
                     Thumbnails
                   </button>
                   <button
                     onClick={() => generateContent('cta')}
-                    disabled={!platform || !niche || !personality || !audience || audience.length === 0 || isGenerating}
+                    disabled={isGenerating}
                     className="px-3 py-2 bg-[#1a1a1a] dark:bg-[#1a1a1a] hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-xs transition-all luxury-shadow"
                   >
                     CTAs
                   </button>
                   <button
                     onClick={() => generateContent('tools')}
-                    disabled={!platform || !niche || !personality || !audience || audience.length === 0 || isGenerating}
+                    disabled={isGenerating}
                     className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-xs transition-all luxury-shadow"
                   >
                     Tools
