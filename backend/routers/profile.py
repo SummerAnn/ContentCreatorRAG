@@ -85,11 +85,16 @@ async def get_profile(user_id: str, db: Session = Depends(get_db)):
         # Return default profile if not found
         return UserProfileResponse(
             user_id=user_id,
+            name=None,
+            creator_type=None,
             primary_platforms=[],
             primary_niches=[],
+            default_personality=None,
             default_audience=[],
+            default_goal=None,
             default_has_voiceover=True,
             brand_voice={},
+            content_style=None,
             personality_traits=[],
             primary_goals=[],
             profile_completed=False
@@ -235,12 +240,13 @@ async def analyze_voice_from_samples(
     This endpoint uses the global LLM instance to analyze content
     """
     
+    global _llm_backend
+
     if not _llm_backend:
         # Try to get from main module
         try:
             from main import llm_backend as main_llm
             if main_llm:
-                global _llm_backend
                 _llm_backend = main_llm
             else:
                 raise HTTPException(status_code=503, detail="LLM not available")

@@ -140,7 +140,9 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Detailed health check"""
+    """Detailed health check - non-blocking"""
+    import requests
+
     health = {
         "status": "ok",
         "components": {
@@ -149,16 +151,26 @@ async def health_check():
             "llm": "checking"
         }
     }
-    
-    # Test LLM
+
+    # Quick LLM check - just verify Ollama is responding, don't actually generate
     try:
         if llm_backend:
-            llm_backend.generate([{"role": "user", "content": "test"}])
-            health["components"]["llm"] = "ok"
+            # Fast check: just ping Ollama API (< 1 second)
+            resp = requests.get(f"{settings.OLLAMA_URL}/api/tags", timeout=2)
+            if resp.status_code == 200:
+                health["components"]["llm"] = "ok"
+            else:
+                health["components"]["llm"] = f"ollama returned {resp.status_code}"
+                health["status"] = "degraded"
+        else:
+            health["components"]["llm"] = "not_initialized"
+    except requests.exceptions.Timeout:
+        health["components"]["llm"] = "timeout"
+        health["status"] = "degraded"
     except Exception as e:
         health["components"]["llm"] = f"error: {str(e)}"
         health["status"] = "degraded"
-    
+
     return health
 
 if __name__ == "__main__":

@@ -62,31 +62,12 @@ class OllamaBackend(LLMBackend):
     def generate_stream(self, messages: List[Dict[str, str]], **kwargs) -> Generator[str, None, None]:
         """
         Generate a streaming response for real-time UI updates.
-        
+
         Yields:
             Text chunks as they're generated
         """
         try:
-            # First, check if Ollama is running
-            try:
-                health_check = requests.get(f"{self.base_url}/api/tags", timeout=5)
-                if health_check.status_code != 200:
-                    raise Exception(f"Ollama not responding: {health_check.status_code}")
-            except requests.exceptions.RequestException:
-                raise Exception(f"Cannot connect to Ollama at {self.base_url}. Make sure Ollama is running: ollama serve")
-            
-            # Check if model is available
-            try:
-                models_resp = requests.get(f"{self.base_url}/api/tags", timeout=5)
-                if models_resp.status_code == 200:
-                    models_data = models_resp.json()
-                    available_models = [m.get('name', '') for m in models_data.get('models', [])]
-                    if self.model not in available_models and not any(self.model in m for m in available_models):
-                        logger.warning(f"Model {self.model} may not be available. Available: {available_models}")
-            except Exception as e:
-                logger.warning(f"Could not check models: {e}")
-            
-            # Make streaming request
+            # Make streaming request directly - no pre-flight checks to minimize latency
             response = requests.post(
                 f"{self.base_url}/api/chat",
                 json={
@@ -96,7 +77,7 @@ class OllamaBackend(LLMBackend):
                     "options": {
                         "temperature": kwargs.get("temperature", 0.9),
                         "top_p": kwargs.get("top_p", 0.95),
-                        "num_predict": kwargs.get("num_predict", 512),  # Limit output for speed
+                        "num_predict": kwargs.get("num_predict", 1024),
                     }
                 },
                 stream=True,

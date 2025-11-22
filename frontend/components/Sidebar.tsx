@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, X, Plus, History, Settings, Database, Bot, Sparkles, Home, ChevronLeft, ChevronRight, FileText, Layers } from 'lucide-react';
+import { Menu, X, Plus, History, Settings, Database, Sparkles, Home, ChevronLeft, ChevronRight, FileText, Layers } from 'lucide-react';
 import AgentManager from './AgentManager';
 import RandomIdeaRoaster from './RandomIdeaRoaster';
 import ConversationHistory from './ConversationHistory';
@@ -169,21 +169,7 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
               )}
             </button>
 
-            <button 
-              onClick={() => setShowAgents(true)}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 text-white/70 rounded-lg hover:bg-white/5 transition-all group relative`}
-              title={isCollapsed ? 'My Agents' : undefined}
-            >
-              <Bot size={20} />
-              {!isCollapsed && <span>My Agents</span>}
-              {isCollapsed && (
-                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
-                  My Agents
-                </span>
-              )}
-            </button>
-
-            <button 
+            <button
               onClick={() => setShowHistory(true)}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
               title={isCollapsed ? 'History' : undefined}
