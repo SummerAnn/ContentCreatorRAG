@@ -89,15 +89,32 @@ if (typeof window !== 'undefined') {
   // Suppress console errors and warnings
   const originalError = console.error.bind(console);
   console.error = function(...args: any[]) {
-    const msg = args.map(a => String(a || '')).join(' ').toLowerCase();
-    if (
+    // Check all arguments more thoroughly
+    const msg = args.map(a => {
+      if (typeof a === 'string') return a;
+      if (typeof a === 'object' && a !== null) {
+        try {
+          return JSON.stringify(a);
+        } catch {
+          return String(a);
+        }
+      }
+      return String(a);
+    }).join(' ').toLowerCase();
+    
+    // More comprehensive pattern matching
+    const isHydrationWarning = 
       msg.includes('extra attributes from the server') ||
       msg.includes('data-has-listeners') ||
-      msg.includes('hydration') ||
-      (msg.includes('at input') && msg.includes('at div')) ||
+      (msg.includes('hydration') && (msg.includes('warning') || msg.includes('error'))) ||
+      (msg.includes('at input') && (msg.includes('at div') || msg.includes('referenceinput'))) ||
       msg.includes('download the react devtools') ||
-      msg.includes('warnforextraattributes')
-    ) {
+      msg.includes('warnforextraattributes') ||
+      msg.includes('warn for extra attributes') ||
+      (msg.includes('referenceinput') && msg.includes('data-has-listeners')) ||
+      (msg.includes('extra attributes') && msg.includes('reference'));
+    
+    if (isHydrationWarning) {
       return; // Suppress hydration warnings silently
     }
     originalError.apply(console, args);

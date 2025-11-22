@@ -49,8 +49,11 @@ export default function ConsoleFilter() {
         'scrape',
         'w.fn.init',
         'download the react devtools',
-        // Only filter hydration warnings if they contain BOTH patterns
+        // Hydration warnings - check for multiple patterns
         message.includes('extra attributes from the server') && message.includes('data-has-listeners') ? 'hydration-warning' : null,
+        message.includes('extra attributes') && message.includes('referenceinput') ? 'hydration-warning' : null,
+        message.includes('warnforextraattributes') || message.includes('warn for extra attributes') ? 'hydration-warning' : null,
+        (message.includes('at input') && message.includes('at div') && message.includes('referenceinput')) ? 'hydration-warning' : null,
         'data-lt-installed',
         'running ginger widget',
         'fast refresh',

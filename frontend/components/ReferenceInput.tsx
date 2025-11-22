@@ -211,7 +211,7 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
           <p className="text-xs text-amber-700 dark:text-amber-300">
             Instead of "travel video", try: "Budget travel tips for exploring Europe on $50/day, focusing on hidden gems and local experiences"
           </p>
-          <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+          <div className="mt-2 text-xs text-amber-600 dark:text-400">
             <p className="font-medium mb-1">Good examples:</p>
             <ul className="list-disc list-inside space-y-0.5">
               {examples.slice(0, 3).map((ex, i) => (
@@ -229,7 +229,7 @@ export default function ReferenceInput({ value, onChange }: ReferenceInputProps)
             ref={inputRef}
             type="text"
             suppressHydrationWarning
-            data-hydration-suppress
+            data-hydration-suppress="true"
             className="w-full pl-10 pr-4 py-3 luxury-border bg-white dark:bg-[#1a1a1a] text-[var(--foreground)] rounded-xl focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition luxury-shadow"
             placeholder="Describe your content idea in detail... (e.g., 'A cozy study session with soft lighting, ambient music, and productivity tips')"
             value={value}
