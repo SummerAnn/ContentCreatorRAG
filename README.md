@@ -164,6 +164,20 @@ npm test
 
 ---
 
+## Troubleshooting
+
+### React Hydration Warning (Development Only)
+
+If you see a console warning like "Warning: Extra attributes from the server: data-has-listeners", **this is expected and harmless**. Here's why:
+
+- **Cause**: Browser extensions (password managers, form fillers, etc.) add attributes like `data-has-listeners` to input fields, which React detects during hydration
+- **Impact**: **None** - This is a development-only warning that doesn't affect functionality
+- **Solution**: The warning is automatically suppressed in production builds. In development, you can safely ignore it
+
+This is a known interaction between React's hydration system and browser extensions, and we've implemented multiple layers of suppression to minimize it. Your app will work perfectly regardless of this warning.
+
+---
+
 ## Project Structure
 
 ```
