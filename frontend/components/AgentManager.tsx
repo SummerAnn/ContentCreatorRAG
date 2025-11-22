@@ -209,14 +209,10 @@ export default function AgentManager({ isOpen, onClose, onSelectAgent }: AgentMa
     
     for (const templateId of templateIds) {
       try {
-        const agent = await createFromTemplate(templateId, userPlatform, userNiche, userGoal);
+        const agent = await createFromTemplate(templateId, userPlatform, userNiche, userGoal, true); // silent = true to suppress individual alerts
         successCount++;
-        const agentName = templateMap[templateId] || templateId;
+        const agentName = templateMap[templateId] || agent?.name || templateId.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
         console.log(`✅ ${agentName} hired successfully!`);
-        // Show success message in console and optionally in UI
-        if (agent && agent.name) {
-          console.log(`   → Agent ID: ${agent.id}, Name: ${agent.name}`);
-        }
         await new Promise(resolve => setTimeout(resolve, 200)); // Small delay between requests
       } catch (error) {
         const agentName = templateMap[templateId] || templateId;
