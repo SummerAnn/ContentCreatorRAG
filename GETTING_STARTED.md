@@ -85,6 +85,12 @@ You'll see a ChatGPT-like interface with:
 
 6. **Watch it Generate**: Content will stream in real-time!
 
+### New Features Available in Sidebar
+
+- **Viral Video Analyzer**: Analyze any viral video from YouTube, TikTok, or Instagram. Get hook analysis, story structure, key moments, and remix suggestions
+- **Content Sorter**: Sort your Instagram or TikTok content by performance metrics (views, likes, engagement rate, etc.) and export to CSV/JSON/Excel
+- **Transcription**: Transcribe audio/video files or URLs. Generate SRT/VTT caption files automatically
+
 7. **Copy or Download**: Use the buttons to copy or download generated content
 
 ### Step 4: Check API Health

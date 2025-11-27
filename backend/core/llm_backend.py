@@ -78,6 +78,7 @@ class OllamaBackend(LLMBackend):
                         "temperature": kwargs.get("temperature", 0.9),
                         "top_p": kwargs.get("top_p", 0.95),
                         "num_predict": kwargs.get("num_predict", 1024),
+                        "num_ctx": 2048,  # Reduce context window for speed
                     }
                 },
                 stream=True,

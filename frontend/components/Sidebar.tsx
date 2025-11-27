@@ -1,13 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, X, Plus, History, Settings, Database, Sparkles, Home, ChevronLeft, ChevronRight, FileText, Layers } from 'lucide-react';
+import { Menu, X, Plus, History, Settings, Database, Sparkles, Home, ChevronLeft, ChevronRight, FileText, Layers, TrendingUp, ArrowUpDown, Mic, Type } from 'lucide-react';
 import AgentManager from './AgentManager';
 import RandomIdeaRoaster from './RandomIdeaRoaster';
 import ConversationHistory from './ConversationHistory';
 import IdeaNotes from './IdeaNotes';
 import TemplateLibrary from './TemplateLibrary';
 import SwipeFileComponent from './SwipeFile';
+import ViralVideoAnalyzer from './ViralVideoAnalyzer';
+import ContentSorter from './ContentSorter';
+import Transcription from './Transcription';
+import ContentLibraryChat from './ContentLibraryChat';
+import ViralTitleGenerator from './ViralTitleGenerator';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -29,6 +34,10 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
   const [showIdeaNotes, setShowIdeaNotes] = useState(false);
   const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
   const [showSwipeFile, setShowSwipeFile] = useState(false);
+  const [showViralAnalyzer, setShowViralAnalyzer] = useState(false);
+  const [showContentSorter, setShowContentSorter] = useState(false);
+  const [showTranscription, setShowTranscription] = useState(false);
+  const [showTitleGenerator, setShowTitleGenerator] = useState(false);
 
   const handleAgentSelect = (agent: any) => {
     if (onAgentSelect) {
@@ -169,6 +178,62 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
               )}
             </button>
 
+            <button 
+              onClick={() => setShowViralAnalyzer(true)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'Viral Video Analyzer' : undefined}
+            >
+              <TrendingUp size={20} />
+              {!isCollapsed && <span>Viral Video Analyzer</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Viral Video Analyzer
+                </span>
+              )}
+            </button>
+
+            <button 
+              onClick={() => setShowContentSorter(true)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'Content Sorter' : undefined}
+            >
+              <ArrowUpDown size={20} />
+              {!isCollapsed && <span>Content Sorter</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Content Sorter
+                </span>
+              )}
+            </button>
+
+            <button 
+              onClick={() => setShowTranscription(true)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'Transcription' : undefined}
+            >
+              <Mic size={20} />
+              {!isCollapsed && <span>Transcription</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Transcription
+                </span>
+              )}
+            </button>
+
+            <button 
+              onClick={() => setShowTitleGenerator(true)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'Viral Title Generator' : undefined}
+            >
+              <Type size={20} />
+              {!isCollapsed && <span>Viral Title Generator</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Viral Title Generator
+                </span>
+              )}
+            </button>
+
             <button
               onClick={() => setShowHistory(true)}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
@@ -293,6 +358,38 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
         />
       )}
 
+      {/* Viral Video Analyzer Modal */}
+      {showViralAnalyzer && (
+        <ViralVideoAnalyzer
+          isOpen={showViralAnalyzer}
+          onClose={() => setShowViralAnalyzer(false)}
+        />
+      )}
+
+      {/* Content Sorter Modal */}
+      {showContentSorter && (
+        <ContentSorter
+          isOpen={showContentSorter}
+          onClose={() => setShowContentSorter(false)}
+        />
+      )}
+
+      {/* Transcription Modal */}
+      {showTranscription && (
+        <Transcription
+          isOpen={showTranscription}
+          onClose={() => setShowTranscription(false)}
+        />
+      )}
+
+      {/* Viral Title Generator Modal */}
+      {showTitleGenerator && (
+        <ViralTitleGenerator
+          isOpen={showTitleGenerator}
+          onClose={() => setShowTitleGenerator(false)}
+        />
+      )}
+
       {/* Agent Manager Modal */}
       <AgentManager
         isOpen={showAgents}
@@ -314,22 +411,12 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
         />
       )}
 
-      {/* Content Library Modal */}
+      {/* Content Library Chat Modal */}
       {showLibrary && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">My Content Library</h2>
-              <button onClick={() => setShowLibrary(false)} className="text-gray-500 hover:text-gray-700">
-                <X size={24} />
-              </button>
-            </div>
-            <p className="text-gray-600 mb-4">Upload your best-performing content to improve RAG results.</p>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-              Upload Content
-            </button>
-          </div>
-        </div>
+        <ContentLibraryChat
+          isOpen={showLibrary}
+          onClose={() => setShowLibrary(false)}
+        />
       )}
 
       {/* Settings Modal */}

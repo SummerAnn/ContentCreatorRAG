@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 from contextlib import asynccontextmanager
 import logging
 
-from routers import generate, upload, agents, chat, trends, templates, swipefile, calendar, ab_testing, viral_score, thumbnail_ab, engagement_predictor, multi_platform, competitor_analysis, humanize, precheck, insights, profile
+from routers import generate, upload, agents, chat, trends, templates, swipefile, calendar, ab_testing, viral_score, thumbnail_ab, engagement_predictor, multi_platform, competitor_analysis, humanize, precheck, insights, profile, viral_analyzer, content_sorter, transcription, viral_title_generator, trend_detector
 from core.embeddings import EmbeddingEngine
 from core.vector_store import VectorStore
 from core.llm_backend import get_llm_backend
@@ -76,6 +76,11 @@ async def lifespan(app: FastAPI):
         precheck.set_globals(embedding_engine, vector_store, llm_backend)
         insights.set_globals(embedding_engine, vector_store, llm_backend)
         profile.set_llm_backend(llm_backend)
+        viral_analyzer.set_globals(embedding_engine, vector_store, llm_backend)
+        content_sorter.set_globals(embedding_engine, vector_store, llm_backend)
+        transcription.set_globals(embedding_engine, vector_store, llm_backend)
+        viral_title_generator.set_globals(embedding_engine, vector_store, llm_backend)
+        trend_detector.set_globals(embedding_engine, vector_store, llm_backend)
         
         logger.info("✅ All systems ready!")
         
@@ -126,6 +131,11 @@ app.include_router(humanize.router)
 app.include_router(precheck.router)
 app.include_router(insights.router)
 app.include_router(profile.router)
+app.include_router(viral_analyzer.router)
+app.include_router(content_sorter.router)
+app.include_router(transcription.router)
+app.include_router(viral_title_generator.router)
+app.include_router(trend_detector.router)
 
 @app.get("/")
 async def root():

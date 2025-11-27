@@ -106,3 +106,60 @@ Be conversational, helpful, and creative. Reference the conversation history whe
         logger.error(f"Error in continue_chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+class FreeChatRequest(BaseModel):
+    user_id: str = "default_user"
+    messages: List[ChatMessage] = []  # Full conversation history
+    user_message: str  # New user message
+
+@router.post("/free")
+async def free_chat(req: FreeChatRequest):
+    """Free-form chat - no platform/niche requirements, just chat freely"""
+    
+    if not llm_backend:
+        raise HTTPException(status_code=503, detail="Backend not fully initialized")
+    
+    try:
+        # Build conversation context
+        conversation_context = []
+        
+        # Add system message for free-form chat (shorter for speed)
+        conversation_context.append({
+            "role": "system",
+            "content": "You are a helpful content creation assistant. Help with content ideas, strategy, and improvements. Be friendly and conversational. NEVER use emojis - use words only. Keep responses concise and helpful."
+        })
+        
+        # Add conversation history (last 10 messages for context - reduced for speed)
+        recent_history = req.messages[-10:] if req.messages else []
+        for msg in recent_history:
+            conversation_context.append({
+                "role": msg.role,
+                "content": msg.content
+            })
+        
+        # Add the new user message
+        conversation_context.append({
+            "role": "user",
+            "content": req.user_message
+        })
+        
+        # Generate response (streaming) with optimized settings for speed
+        async def stream_response():
+            try:
+                # Use lower temperature and fewer tokens for faster responses
+                for chunk in llm_backend.generate_stream(
+                    conversation_context, 
+                    temperature=0.7,  # Slightly lower for faster generation
+                    num_predict=512   # Limit tokens for faster response
+                ):
+                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+                yield f"data: {json.dumps({'done': True})}\n\n"
+            except Exception as e:
+                logger.error(f"Free chat error: {e}")
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+        
+        return StreamingResponse(stream_response(), media_type="text/event-stream")
+    
+    except Exception as e:
+        logger.error(f"Error in free_chat: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+

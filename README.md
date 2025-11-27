@@ -36,6 +36,10 @@ Generate viral hooks, scripts, shot lists, and music prompts for YouTube Shorts,
 - **Content Pre-Check**: Check content against platform guidelines before posting (like TikTok's pre-check)
 - **Search Insights Integration**: Show trending searches and content opportunities based on real-time trends
 - **User Profile System**: Save your preferences once - platform, niche, personality, audience defaults auto-load
+- **Viral Video Analyzer**: Download, transcribe, and analyze any viral video from YouTube, TikTok, or Instagram. Get hook analysis, story structure, key moments, and remix suggestions
+- **Content Sorter**: Sort your Instagram or TikTok content by views, likes, comments, engagement rate, or date. Export to CSV, JSON, or Excel
+- **Transcription Service**: Transcribe audio/video files or URLs with Whisper AI. Generate SRT/VTT caption files automatically
+- **Batch Channel Analysis**: Analyze entire YouTube channels to find top-performing videos and patterns
 
 ---
 
@@ -120,6 +124,8 @@ Frontend (Next.js) ← → Backend (FastAPI) ← → Ollama (Local LLM)
 - LLM: Ollama (Llama 3.1 8B)
 - Embeddings: Sentence Transformers
 - Vector Store: FAISS + SQLite
+- Video Analysis: yt-dlp, OpenAI Whisper
+- Content Sorting: Instaloader, TikTokApi
 
 ---
 
@@ -271,6 +277,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Content Pre-Check (check against platform guidelines)
 - [x] Search Insights Integration (trending searches and opportunities)
 - [x] User Profile System (save preferences, auto-load defaults)
+- [x] Viral Video Analyzer (analyze viral videos with AI)
+- [x] Content Sorter (sort and export content by performance)
+- [x] Transcription Service (transcribe videos and generate captions)
+- [x] Batch Channel Analysis (analyze entire channels)
 
 ### Phase 2
 - [ ] Performance tracking

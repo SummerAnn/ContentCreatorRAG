@@ -47,6 +47,13 @@ Once setup completes, open your browser:
 4. **Add Reference** (optional): Describe your content idea
 5. **Generate**: Click "Generate Hooks" to start!
 
+### 4. New Analysis Tools
+
+Access from the sidebar:
+- **Viral Video Analyzer**: Analyze any viral video to understand what makes it work
+- **Content Sorter**: Sort your Instagram/TikTok content by performance and export data
+- **Transcription**: Transcribe videos and generate caption files (SRT/VTT)
+
 ## Troubleshooting
 
 ### Model Not Downloading
