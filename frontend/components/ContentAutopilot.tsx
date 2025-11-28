@@ -61,7 +61,12 @@ export default function ContentAutopilot({ isOpen, onClose }: { isOpen: boolean;
         const data = await response.json();
         setConfig(data);
         setShowSetup(false);
+      } else if (response.status === 404) {
+        // No config exists yet - show setup form
+        setConfig(null);
+        setShowSetup(true);
       } else {
+        console.error('Failed to fetch config:', response.status);
         setShowSetup(true);
       }
     } catch (error) {
@@ -76,9 +81,14 @@ export default function ContentAutopilot({ isOpen, onClose }: { isOpen: boolean;
       if (response.ok) {
         const data = await response.json();
         setContentQueue(data);
+      } else if (response.status === 404) {
+        // No queue exists yet - set empty queue
+        setContentQueue({ pending: [], approved: [], total_pending: 0, total_approved: 0 });
       }
     } catch (error) {
       console.error('Failed to fetch queue:', error);
+      // Set empty queue on error
+      setContentQueue({ pending: [], approved: [], total_pending: 0, total_approved: 0 });
     }
   };
 
