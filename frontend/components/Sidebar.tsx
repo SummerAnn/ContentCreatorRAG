@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, X, Plus, History, Settings, Database, Sparkles, Home, ChevronLeft, ChevronRight, FileText, Layers, TrendingUp, ArrowUpDown, Mic, Type } from 'lucide-react';
+import { Menu, X, Plus, History, Settings, Database, Sparkles, Home, ChevronLeft, ChevronRight, FileText, Layers, TrendingUp, ArrowUpDown, Mic, Type, Lightbulb, Workflow } from 'lucide-react';
 import AgentManager from './AgentManager';
 import RandomIdeaRoaster from './RandomIdeaRoaster';
 import ConversationHistory from './ConversationHistory';
@@ -13,6 +13,8 @@ import ContentSorter from './ContentSorter';
 import Transcription from './Transcription';
 import ContentLibraryChat from './ContentLibraryChat';
 import ViralTitleGenerator from './ViralTitleGenerator';
+import IdeasFeed from './IdeasFeed';
+import OneClickWorkflows from './OneClickWorkflows';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -38,6 +40,8 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
   const [showContentSorter, setShowContentSorter] = useState(false);
   const [showTranscription, setShowTranscription] = useState(false);
   const [showTitleGenerator, setShowTitleGenerator] = useState(false);
+  const [showIdeasFeed, setShowIdeasFeed] = useState(false);
+  const [showWorkflows, setShowWorkflows] = useState(false);
 
   const handleAgentSelect = (agent: any) => {
     if (onAgentSelect) {
@@ -234,6 +238,34 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
               )}
             </button>
 
+            <button 
+              onClick={() => setShowIdeasFeed(true)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'Content Ideas Feed' : undefined}
+            >
+              <Lightbulb size={20} />
+              {!isCollapsed && <span>Content Ideas Feed</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Content Ideas Feed
+                </span>
+              )}
+            </button>
+
+            <button 
+              onClick={() => setShowWorkflows(true)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'One-Click Workflows' : undefined}
+            >
+              <Workflow size={20} />
+              {!isCollapsed && <span>One-Click Workflows</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  One-Click Workflows
+                </span>
+              )}
+            </button>
+
             <button
               onClick={() => setShowHistory(true)}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
@@ -387,6 +419,22 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
         <ViralTitleGenerator
           isOpen={showTitleGenerator}
           onClose={() => setShowTitleGenerator(false)}
+        />
+      )}
+
+      {/* Content Ideas Feed Modal */}
+      {showIdeasFeed && (
+        <IdeasFeed
+          isOpen={showIdeasFeed}
+          onClose={() => setShowIdeasFeed(false)}
+        />
+      )}
+
+      {/* One-Click Workflows Modal */}
+      {showWorkflows && (
+        <OneClickWorkflows
+          isOpen={showWorkflows}
+          onClose={() => setShowWorkflows(false)}
         />
       )}
 
