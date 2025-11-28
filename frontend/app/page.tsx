@@ -39,25 +39,27 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-[var(--background)]">
-      <Sidebar 
-        isOpen={sidebarOpen}
-        isCollapsed={sidebarCollapsed}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
-        onCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        onAgentSelect={handleAgentSelect}
-        onHome={handleHome}
-        onLoadConversation={handleLoadConversation}
-        onDevelopIdea={handleDevelopIdea}
-      />
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <Chat 
-          key={chatKey} 
-          initialAgent={selectedAgent} 
-          initialConversation={selectedConversation}
-          initialIdea={ideaToDevelop}
+    <div className="w-screen h-screen overflow-hidden">
+      <div className="flex h-full bg-[var(--background)] scale-[0.9] origin-top-left" style={{ width: '111.11%', height: '111.11%' }}>
+        <Sidebar 
+          isOpen={sidebarOpen}
+          isCollapsed={sidebarCollapsed}
+          onToggle={() => setSidebarOpen(!sidebarOpen)}
+          onCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onAgentSelect={handleAgentSelect}
+          onHome={handleHome}
+          onLoadConversation={handleLoadConversation}
+          onDevelopIdea={handleDevelopIdea}
         />
-      </main>
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <Chat 
+            key={chatKey} 
+            initialAgent={selectedAgent} 
+            initialConversation={selectedConversation}
+            initialIdea={ideaToDevelop}
+          />
+        </main>
+      </div>
     </div>
   );
 }

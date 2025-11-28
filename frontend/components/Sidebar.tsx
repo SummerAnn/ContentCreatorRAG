@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, X, Plus, History, Settings, Database, Sparkles, Home, ChevronLeft, ChevronRight, FileText, Layers, TrendingUp, ArrowUpDown, Mic, Type, Lightbulb, Workflow } from 'lucide-react';
+import { Menu, X, Plus, History, Settings, Database, Sparkles, Home, ChevronLeft, ChevronRight, FileText, Layers, TrendingUp, ArrowUpDown, Mic, Type, Lightbulb, Workflow, Rocket } from 'lucide-react';
 import AgentManager from './AgentManager';
 import RandomIdeaRoaster from './RandomIdeaRoaster';
 import ConversationHistory from './ConversationHistory';
@@ -15,6 +15,7 @@ import ContentLibraryChat from './ContentLibraryChat';
 import ViralTitleGenerator from './ViralTitleGenerator';
 import IdeasFeed from './IdeasFeed';
 import OneClickWorkflows from './OneClickWorkflows';
+import ContentAutopilot from './ContentAutopilot';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -42,6 +43,7 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
   const [showTitleGenerator, setShowTitleGenerator] = useState(false);
   const [showIdeasFeed, setShowIdeasFeed] = useState(false);
   const [showWorkflows, setShowWorkflows] = useState(false);
+  const [showAutopilot, setShowAutopilot] = useState(false);
 
   const handleAgentSelect = (agent: any) => {
     if (onAgentSelect) {
@@ -266,6 +268,20 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
               )}
             </button>
 
+            <button 
+              onClick={() => setShowAutopilot(true)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+              title={isCollapsed ? 'Content Autopilot' : undefined}
+            >
+              <Rocket size={20} />
+              {!isCollapsed && <span>Content Autopilot</span>}
+              {isCollapsed && (
+                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                  Content Autopilot
+                </span>
+              )}
+            </button>
+
             <button
               onClick={() => setShowHistory(true)}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
@@ -435,6 +451,14 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
         <OneClickWorkflows
           isOpen={showWorkflows}
           onClose={() => setShowWorkflows(false)}
+        />
+      )}
+
+      {/* Content Autopilot Modal */}
+      {showAutopilot && (
+        <ContentAutopilot
+          isOpen={showAutopilot}
+          onClose={() => setShowAutopilot(false)}
         />
       )}
 
