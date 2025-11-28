@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Menu, X, Plus, History, Settings, Database, Sparkles, Home, ChevronLeft, ChevronRight, FileText, Layers, TrendingUp, ArrowUpDown, Mic, Type, Lightbulb, Workflow, Rocket } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Menu, X, Plus, History, Settings, Database, Sparkles, Home, ChevronLeft, ChevronRight, FileText, Layers, TrendingUp, ArrowUpDown, Mic, Type, Lightbulb, Workflow, Rocket, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import AgentManager from './AgentManager';
 import RandomIdeaRoaster from './RandomIdeaRoaster';
 import ConversationHistory from './ConversationHistory';
@@ -11,11 +12,11 @@ import SwipeFileComponent from './SwipeFile';
 import ViralVideoAnalyzer from './ViralVideoAnalyzer';
 import ContentSorter from './ContentSorter';
 import Transcription from './Transcription';
-import ContentLibraryChat from './ContentLibraryChat';
 import ViralTitleGenerator from './ViralTitleGenerator';
 import IdeasFeed from './IdeasFeed';
 import OneClickWorkflows from './OneClickWorkflows';
 import ContentAutopilot from './ContentAutopilot';
+import SimpleChat from './SimpleChat';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -31,7 +32,7 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onCollapse, onAgentSelect, onHome, onLoadConversation, onDevelopIdea }: SidebarProps) {
   const [showAgents, setShowAgents] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [showLibrary, setShowLibrary] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showIdeaRoaster, setShowIdeaRoaster] = useState(false);
   const [showIdeaNotes, setShowIdeaNotes] = useState(false);
@@ -44,6 +45,62 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
   const [showIdeasFeed, setShowIdeasFeed] = useState(false);
   const [showWorkflows, setShowWorkflows] = useState(false);
   const [showAutopilot, setShowAutopilot] = useState(false);
+  
+  // Collapsible sections state
+  const [expandedSections, setExpandedSections] = useState({
+    core: true,
+    ideas: true,
+    generation: true,
+    analysis: true,
+    library: true,
+    settings: true,
+  });
+  
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+  
+  const closeAllModals = () => {
+    setShowAgents(false);
+    setShowHistory(false);
+    setShowChat(false);
+    setShowSettings(false);
+    setShowIdeaRoaster(false);
+    setShowIdeaNotes(false);
+    setShowTemplateLibrary(false);
+    setShowSwipeFile(false);
+    setShowViralAnalyzer(false);
+    setShowContentSorter(false);
+    setShowTranscription(false);
+    setShowTitleGenerator(false);
+    setShowIdeasFeed(false);
+    setShowWorkflows(false);
+    setShowAutopilot(false);
+  };
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock body scroll when Chat modal is open
+  useEffect(() => {
+    if (showChat && mounted) {
+      // Calculate scrollbar width to prevent layout shift
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      const originalOverflow = document.body.style.overflow;
+      const originalPaddingRight = document.body.style.paddingRight;
+      
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.paddingRight = originalPaddingRight;
+      };
+    }
+  }, [showChat, mounted]);
 
   const handleAgentSelect = (agent: any) => {
     if (onAgentSelect) {
@@ -99,9 +156,29 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
           )}
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-2">
+          <nav className="flex-1 space-y-2 overflow-y-auto">
+            {/* Core Section */}
+            <div>
+              {!isCollapsed && (
+                <button
+                  onClick={() => toggleSection('core')}
+                  className="w-full flex items-center justify-between px-4 py-2 text-white/60 hover:text-white transition-colors"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider">Core</span>
+                  {expandedSections.core ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              )}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  !isCollapsed && !expandedSections.core ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'
+                }`}
+              >
+                <div className="space-y-1 pl-2">
             <button 
-              onClick={() => onHome?.()}
+                    onClick={() => {
+                      closeAllModals();
+                      onHome?.();
+                    }}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 luxury-accent hover:opacity-90 text-white rounded-lg transition-all luxury-shadow group relative`}
               title={isCollapsed ? 'Home' : undefined}
             >
@@ -115,7 +192,27 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
             </button>
 
             <button 
-              onClick={() => setShowAgents(true)}
+                    onClick={() => {
+                      closeAllModals();
+                      setShowChat(true);
+                    }}
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+                    title={isCollapsed ? 'Chat' : undefined}
+                  >
+                    <MessageSquare size={20} />
+                    {!isCollapsed && <span>Chat</span>}
+                    {isCollapsed && (
+                      <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                        Chat
+                      </span>
+                    )}
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      closeAllModals();
+                      setShowAgents(true);
+                    }}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
               title={isCollapsed ? 'New Project' : undefined}
             >
@@ -127,9 +224,33 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
                 </span>
               )}
             </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Ideas & Inspiration Section */}
+            <div>
+              {!isCollapsed && (
+                <button
+                  onClick={() => toggleSection('ideas')}
+                  className="w-full flex items-center justify-between px-4 py-2 text-white/60 hover:text-white transition-colors"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider">Ideas & Inspiration</span>
+                  {expandedSections.ideas ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              )}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  !isCollapsed && !expandedSections.ideas ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'
+                }`}
+              >
+                <div className="space-y-1 pl-2">
 
             <button 
-              onClick={() => setShowIdeaRoaster(true)}
+                    onClick={() => {
+                      closeAllModals();
+                      setShowIdeaRoaster(true);
+                    }}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
               title={isCollapsed ? 'Random Idea Roaster' : undefined}
             >
@@ -143,7 +264,10 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
             </button>
 
             <button 
-              onClick={() => setShowTemplateLibrary(true)}
+                    onClick={() => {
+                      closeAllModals();
+                      setShowTemplateLibrary(true);
+                    }}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
               title={isCollapsed ? 'Template Library' : undefined}
             >
@@ -157,7 +281,10 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
             </button>
 
             <button 
-              onClick={() => setShowIdeaNotes(true)}
+                    onClick={() => {
+                      closeAllModals();
+                      setShowIdeaNotes(true);
+                    }}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
               title={isCollapsed ? 'Idea Notes' : undefined}
             >
@@ -171,7 +298,189 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
             </button>
 
             <button 
-              onClick={() => setShowSwipeFile(true)}
+                    onClick={() => {
+                      closeAllModals();
+                      setShowIdeasFeed(true);
+                    }}
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+                    title={isCollapsed ? 'Content Ideas Feed' : undefined}
+                  >
+                    <Lightbulb size={20} />
+                    {!isCollapsed && <span>Content Ideas Feed</span>}
+                    {isCollapsed && (
+                      <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                        Content Ideas Feed
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Content Generation Section */}
+            <div>
+              {!isCollapsed && (
+                <button
+                  onClick={() => toggleSection('generation')}
+                  className="w-full flex items-center justify-between px-4 py-2 text-white/60 hover:text-white transition-colors"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider">Content Generation</span>
+                  {expandedSections.generation ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              )}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  !isCollapsed && !expandedSections.generation ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'
+                }`}
+              >
+                <div className="space-y-1 pl-2">
+                  <button 
+                    onClick={() => {
+                      closeAllModals();
+                      setShowWorkflows(true);
+                    }}
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+                    title={isCollapsed ? 'One-Click Workflows' : undefined}
+                  >
+                    <Workflow size={20} />
+                    {!isCollapsed && <span>One-Click Workflows</span>}
+                    {isCollapsed && (
+                      <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                        One-Click Workflows
+                      </span>
+                    )}
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      closeAllModals();
+                      setShowAutopilot(true);
+                    }}
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+                    title={isCollapsed ? 'Content Autopilot' : undefined}
+                  >
+                    <Rocket size={20} />
+                    {!isCollapsed && <span>Content Autopilot</span>}
+                    {isCollapsed && (
+                      <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                        Content Autopilot
+                      </span>
+                    )}
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      closeAllModals();
+                      setShowTitleGenerator(true);
+                    }}
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+                    title={isCollapsed ? 'Viral Title Generator' : undefined}
+                  >
+                    <Type size={20} />
+                    {!isCollapsed && <span>Viral Title Generator</span>}
+                    {isCollapsed && (
+                      <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                        Viral Title Generator
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Analysis Tools Section */}
+            <div>
+              {!isCollapsed && (
+                <button
+                  onClick={() => toggleSection('analysis')}
+                  className="w-full flex items-center justify-between px-4 py-2 text-white/60 hover:text-white transition-colors"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider">Analysis Tools</span>
+                  {expandedSections.analysis ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              )}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  !isCollapsed && !expandedSections.analysis ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'
+                }`}
+              >
+                <div className="space-y-1 pl-2">
+                  <button 
+                    onClick={() => {
+                      closeAllModals();
+                      setShowViralAnalyzer(true);
+                    }}
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+                    title={isCollapsed ? 'Viral Video Analyzer' : undefined}
+                  >
+                    <TrendingUp size={20} />
+                    {!isCollapsed && <span>Viral Video Analyzer</span>}
+                    {isCollapsed && (
+                      <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                        Viral Video Analyzer
+                      </span>
+                    )}
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      closeAllModals();
+                      setShowContentSorter(true);
+                    }}
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+                    title={isCollapsed ? 'Content Sorter' : undefined}
+                  >
+                    <ArrowUpDown size={20} />
+                    {!isCollapsed && <span>Content Sorter</span>}
+                    {isCollapsed && (
+                      <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                        Content Sorter
+                      </span>
+                    )}
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      closeAllModals();
+                      setShowTranscription(true);
+                    }}
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
+                    title={isCollapsed ? 'Transcription' : undefined}
+                  >
+                    <Mic size={20} />
+                    {!isCollapsed && <span>Transcription</span>}
+                    {isCollapsed && (
+                      <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
+                        Transcription
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Library Section */}
+            <div>
+              {!isCollapsed && (
+                <button
+                  onClick={() => toggleSection('library')}
+                  className="w-full flex items-center justify-between px-4 py-2 text-white/60 hover:text-white transition-colors"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider">Library</span>
+                  {expandedSections.library ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              )}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  !isCollapsed && !expandedSections.library ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'
+                }`}
+              >
+                <div className="space-y-1 pl-2">
+                  <button 
+                    onClick={() => {
+                      closeAllModals();
+                      setShowSwipeFile(true);
+                    }}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
               title={isCollapsed ? 'Swipe File' : undefined}
             >
@@ -184,106 +493,11 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
               )}
             </button>
 
-            <button 
-              onClick={() => setShowViralAnalyzer(true)}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
-              title={isCollapsed ? 'Viral Video Analyzer' : undefined}
-            >
-              <TrendingUp size={20} />
-              {!isCollapsed && <span>Viral Video Analyzer</span>}
-              {isCollapsed && (
-                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
-                  Viral Video Analyzer
-                </span>
-              )}
-            </button>
-
-            <button 
-              onClick={() => setShowContentSorter(true)}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
-              title={isCollapsed ? 'Content Sorter' : undefined}
-            >
-              <ArrowUpDown size={20} />
-              {!isCollapsed && <span>Content Sorter</span>}
-              {isCollapsed && (
-                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
-                  Content Sorter
-                </span>
-              )}
-            </button>
-
-            <button 
-              onClick={() => setShowTranscription(true)}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
-              title={isCollapsed ? 'Transcription' : undefined}
-            >
-              <Mic size={20} />
-              {!isCollapsed && <span>Transcription</span>}
-              {isCollapsed && (
-                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
-                  Transcription
-                </span>
-              )}
-            </button>
-
-            <button 
-              onClick={() => setShowTitleGenerator(true)}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
-              title={isCollapsed ? 'Viral Title Generator' : undefined}
-            >
-              <Type size={20} />
-              {!isCollapsed && <span>Viral Title Generator</span>}
-              {isCollapsed && (
-                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
-                  Viral Title Generator
-                </span>
-              )}
-            </button>
-
-            <button 
-              onClick={() => setShowIdeasFeed(true)}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
-              title={isCollapsed ? 'Content Ideas Feed' : undefined}
-            >
-              <Lightbulb size={20} />
-              {!isCollapsed && <span>Content Ideas Feed</span>}
-              {isCollapsed && (
-                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
-                  Content Ideas Feed
-                </span>
-              )}
-            </button>
-
-            <button 
-              onClick={() => setShowWorkflows(true)}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
-              title={isCollapsed ? 'One-Click Workflows' : undefined}
-            >
-              <Workflow size={20} />
-              {!isCollapsed && <span>One-Click Workflows</span>}
-              {isCollapsed && (
-                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
-                  One-Click Workflows
-                </span>
-              )}
-            </button>
-
-            <button 
-              onClick={() => setShowAutopilot(true)}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
-              title={isCollapsed ? 'Content Autopilot' : undefined}
-            >
-              <Rocket size={20} />
-              {!isCollapsed && <span>Content Autopilot</span>}
-              {isCollapsed && (
-                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
-                  Content Autopilot
-                </span>
-              )}
-            </button>
-
             <button
-              onClick={() => setShowHistory(true)}
+                    onClick={() => {
+                      closeAllModals();
+                      setShowHistory(true);
+                    }}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 bg-white/5 hover:bg-white/10 text-white/90 rounded-lg transition-all luxury-border group relative`}
               title={isCollapsed ? 'History' : undefined}
             >
@@ -295,24 +509,30 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
                 </span>
               )}
             </button>
+                </div>
+              </div>
+            </div>
 
+            {/* Settings Section */}
+            <div>
+              {!isCollapsed && (
             <button 
-              onClick={() => setShowLibrary(true)}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 text-white/70 rounded-lg hover:bg-white/5 transition-all group relative`}
-              title={isCollapsed ? 'My Content Library' : undefined}
-            >
-              <Database size={20} />
-              {!isCollapsed && <span>My Content Library</span>}
-              {isCollapsed && (
-                <span className="absolute left-full ml-2 px-2 py-1 bg-[#1a1a1a] text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 luxury-shadow">
-                  My Content Library
-                </span>
+                  onClick={() => toggleSection('settings')}
+                  className="w-full flex items-center justify-between px-4 py-2 text-white/60 hover:text-white transition-colors"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider">Settings</span>
+                  {expandedSections.settings ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
               )}
-            </button>
-
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  !isCollapsed && !expandedSections.settings ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'
+                }`}
+              >
+                <div className="space-y-1 pl-2">
             <button 
               onClick={() => {
-                // Navigate to settings page
+                      closeAllModals();
                 if (typeof window !== 'undefined') {
                   window.location.href = '/settings';
                 }
@@ -328,6 +548,9 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
                 </span>
               )}
             </button>
+                </div>
+              </div>
+            </div>
           </nav>
 
           {/* Footer */}
@@ -483,12 +706,42 @@ export default function Sidebar({ isOpen, isCollapsed = false, onToggle, onColla
         />
       )}
 
-      {/* Content Library Chat Modal */}
-      {showLibrary && (
-        <ContentLibraryChat
-          isOpen={showLibrary}
-          onClose={() => setShowLibrary(false)}
-        />
+      {/* Chat Modal - Using Portal to prevent layout shifts */}
+      {mounted && showChat && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowChat(false);
+            }
+          }}
+        >
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <div 
+              className="bg-[#1a1a1a] rounded-2xl shadow-2xl max-w-4xl w-full h-[90vh] flex flex-col text-white overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center p-4 border-b border-white/10 flex-shrink-0 h-[60px]">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-4 h-4 text-white" />
+                  </div>
+                  <h2 className="text-xl font-semibold">Chat</h2>
+                </div>
+                <button 
+                  onClick={() => setShowChat(false)} 
+                  className="text-white/70 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg flex-shrink-0"
+                >
+                  <X size={20} />
+              </button>
+              </div>
+              <div className="flex-1 overflow-hidden min-h-0">
+                <SimpleChat onClose={() => setShowChat(false)} />
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Settings Modal */}

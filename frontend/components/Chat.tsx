@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import ChatMessage from './ChatMessage';
 import PlatformSelector from './PlatformSelector';
@@ -84,7 +85,29 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
   const [isChatting, setIsChatting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showNichePopup, setShowNichePopup] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock body scroll when niche popup is open
+  useEffect(() => {
+    if (showNichePopup && mounted) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      const originalOverflow = document.body.style.overflow;
+      const originalPaddingRight = document.body.style.paddingRight;
+      
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.paddingRight = originalPaddingRight;
+      };
+    }
+  }, [showNichePopup, mounted]);
 
   // Load user profile defaults on mount (before other effects)
   useEffect(() => {
@@ -601,9 +624,9 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
   const isFirstMessage = messages.length === 0;
 
   return (
-    <div className="flex flex-col h-full bg-[var(--background)]">
+    <div className="flex flex-col h-full bg-[var(--background)] overflow-hidden">
       {/* Header */}
-      <header className="bg-white dark:bg-[#0f0f0f] border-b luxury-border px-6 py-5 luxury-shadow flex items-center justify-between">
+      <header className="bg-white dark:bg-[#0f0f0f] border-b luxury-border px-6 py-5 luxury-shadow flex items-center justify-between flex-shrink-0">
         <h2 className="text-xl font-semibold text-[var(--foreground)] tracking-tight">Content Generator</h2>
         {!isFirstMessage && (
           <button
@@ -618,7 +641,7 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
       </header>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[var(--background)]">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[var(--background)] min-h-0">
         {isFirstMessage ? (
           <div className="max-w-3xl mx-auto text-center mt-20">
             <div className="mb-8">
@@ -885,9 +908,9 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
         )}
       </div>
 
-      {/* Chat Input for Continued Conversation */}
-      {!isFirstMessage && messages.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-6 py-4">
+      {/* Chat Input for Continued Conversation - Always render to prevent layout shifts */}
+      <div className={`transition-all duration-300 ease-in-out flex-shrink-0 ${!isFirstMessage && messages.length > 0 ? 'h-auto opacity-100' : 'h-0 opacity-0 overflow-hidden pointer-events-none'}`}>
+        <div className={`bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 ${!isFirstMessage && messages.length > 0 ? 'px-6 py-4' : 'p-0'}`}>
           <div className="max-w-3xl mx-auto">
             <form
               onSubmit={(e) => {
@@ -935,19 +958,20 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
             </p>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Input area */}
-      {!isFirstMessage && (
-        <div className="bg-white dark:bg-[#0f0f0f] border-t luxury-border px-6 py-4 luxury-shadow-lg">
+      {/* Input area - Always render to prevent layout shifts */}
+      <div className={`transition-all duration-300 ease-in-out flex-shrink-0 ${!isFirstMessage ? 'h-auto opacity-100' : 'h-0 opacity-0 overflow-hidden pointer-events-none'}`}>
+        <div className={`bg-white dark:bg-[#0f0f0f] border-t luxury-border luxury-shadow-lg ${!isFirstMessage ? 'px-6 py-4' : 'p-0 border-0'}`}>
           <div className="max-w-4xl mx-auto">
-            {!reference && (
-              <div className="mb-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-2">
+            {/* Amber warning - Always render with fixed height to prevent layout shifts */}
+            <div className={`transition-all duration-300 ease-in-out mb-3 ${!reference ? 'h-[52px] opacity-100' : 'h-0 opacity-0 overflow-hidden'}`}>
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-2">
                 <p className="text-xs text-amber-800 dark:text-amber-200">
                   <strong>Tip:</strong> Add a detailed reference for better results! Click the info icon above.
                 </p>
               </div>
-            )}
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-2">
               <button
                 onClick={() => generateContent('hooks')}
@@ -1031,7 +1055,7 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
                 </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Settings Panel */}
       <SettingsPanel
@@ -1063,16 +1087,21 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
         }}
       />
 
-      {/* Cute Niche Popup Modal */}
-      {showNichePopup && (
+      {/* Cute Niche Popup Modal - Using Portal to prevent layout shifts */}
+      {mounted && showNichePopup && createPortal(
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setShowNichePopup(false)}
+          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowNichePopup(false);
+            }
+          }}
         >
-          <div 
-            className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 max-w-md w-full mx-4 luxury-shadow-xl border luxury-border animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div 
+              className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 max-w-md w-full luxury-shadow-xl border luxury-border pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center luxury-shadow-lg">
                 <AlertCircle className="w-6 h-6 text-white" />
@@ -1108,7 +1137,9 @@ export default function Chat({ initialAgent, initialConversation, initialIdea }:
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );
